@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CLAUDE.md・hooks・Skills・フェーズ別コンテキスト制御・ループとコストの上限。ハーネスの具体設定をまとめた実践ガイド（別紙）">
+<title>実践ガイド — ハーネスの具体設定</title>
+<style>
+  :root{
+    --bg:#eeeae0; --paper:#ffffff; --panel:#faf8f3;
+    --ink:#1b2430; --sub:#48525f; --mut:#8a8f99; --line:#e2ddd0;
+    --teal:#0f766e; --terra:#bd4b1e; --indigo:#3b3a86; --slate:#3d5a80;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+    color:var(--ink);line-height:1.75;background:var(--bg)}
+  .serif{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 22px 110px}
+  header.top{background:linear-gradient(180deg,#1b2430,#243447);color:#f4f1ea;border-radius:10px;padding:40px 44px;text-align:center}
+  header.top .ey{letter-spacing:.3em;font-size:12px;color:#8fb7c9;font-weight:700}
+  header.top h1{font-size:34px;margin:12px 0 6px}
+  header.top p{color:#cfd6de;font-size:15px}
+  header.top .back{margin-top:14px;font-size:13px}
+  header.top .back a{color:#a9cbd8;font-weight:600}
+  section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:32px 40px;margin:18px 0;
+    box-shadow:0 2px 10px rgba(40,35,20,.05);scroll-margin-top:24px}
+  section:target{border-color:var(--slate);box-shadow:0 2px 14px rgba(61,90,128,.18)}
+  .kick{display:inline-block;font-weight:700;font-size:12px;letter-spacing:.12em;color:var(--terra);text-transform:uppercase;margin-bottom:8px}
+  h2{font-size:25px;margin-bottom:8px}
+  h3{font-size:17px;margin:20px 0 4px;color:var(--indigo)}
+  p{font-size:15.5px;color:var(--sub)}
+  .lead{font-size:16px;color:var(--sub)}
+  ul{list-style:none;margin-top:10px}
+  li{font-size:15px;color:var(--sub);padding:6px 0 6px 20px;position:relative;line-height:1.65}
+  li::before{content:"";position:absolute;left:2px;top:14px;width:6px;height:6px;background:var(--teal);border-radius:1px}
+  li b{color:var(--ink)}
+  pre{background:#1c2530;color:#e7e3d6;border-radius:8px;padding:16px 18px;overflow:auto;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.65;margin-top:10px}
+  pre .c{color:#8c96a3}pre .s{color:#c7e59d}pre .k{color:#7fd6c6}pre .n{color:#e0a06a}
+  .tblwrap{overflow-x:auto;margin-top:12px}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--ink);font-size:13px}
+  td{color:var(--sub)}
+  td code,p code,li code{background:#f0ece2;border-radius:4px;padding:1px 6px;font-family:"SF Mono",Menlo,monospace;font-size:12.5px;color:#7a3b1c}
+  .note{margin-top:14px;padding:13px 16px;border-radius:8px;background:var(--panel);border:1px solid var(--line);font-size:14px;color:var(--sub)}
+  .note.warn{background:#fbeee7;border-color:#e7c3ad}
+  .note b{color:var(--terra)}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 26px;margin:18px 0}
+  .toc a{color:var(--slate);text-decoration:none;font-weight:600;font-size:15px}
+  .toc a:hover{text-decoration:underline}
+  .toc li::before{background:var(--slate)}
+  .up{display:block;text-align:right;margin-top:18px;font-size:12.5px}
+  .up a{color:var(--mut);text-decoration:none}
+  .up a:hover{color:var(--slate)}
+  .tail{text-align:center;color:var(--mut);font-size:13px;margin-top:26px}
+  .links a{color:var(--slate);font-weight:600}
+  @media(max-width:640px){section{padding:24px 22px}header.top h1{font-size:26px}}
+  @media print{body{background:#fff}section{box-shadow:none;break-inside:avoid}.up{display:none}header.top{background:#1b2430}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top" id="top">
+    <div class="ey">別紙 / HANDS-ON</div>
+    <h1 class="serif">実践ガイド — ハーネスの具体設定</h1>
+    <p>CLAUDE.md ／ hooks ／ ループ・トークン上限の「どこに何を書くか」</p>
+    <p class="back">本編：<a href="slides.html">xxエンジニアリング（勉強会資料）↗</a></p>
+  </header>
+
+  <section class="toc">
+    <span class="kick">目次</span>
+    <ul>
+      <li><a href="#claude">1. CLAUDE.md に何を書くか</a></li>
+      <li><a href="#hooks">2. hooks の使い方（settings.json）</a></li>
+      <li><a href="#skills">3. Skills（SKILL.md）の設定例</a></li>
+      <li><a href="#phase">4. フェーズ別のコンテキスト制御（要件定義 / 実装）</a></li>
+      <li><a href="#loop">5. ループの上限・停止条件</a></li>
+      <li><a href="#token">6. トークン / コストの上限はどこで設定するか</a></li>
+      <li><a href="#start">7. 最初の30分でやること</a></li>
+    </ul>
+    <div class="note">※ フラグ名・スキーマは更新され得ます。実行前に公式ドキュメント（末尾リンク）で最新を確認してください。</div>
+  </section>
+
+  <!-- 1 CLAUDE.md -->
+  <section id="claude">
+    <span class="kick">1</span>
+    <h2 class="serif">CLAUDE.md に何を書くか</h2>
+    <p class="lead">プロジェクト直下に置くと<b>毎ターン system prompt に載る</b>メモリファイル。原則は「短く・理由付きで・過去の失敗だけをルール化」。目安は60行以内。</p>
+
+    <h3>置き場所と読み込み</h3>
+    <ul>
+      <li><code>./CLAUDE.md</code> … リポジトリ直下。チーム共有（コミット対象）</li>
+      <li><code>./CLAUDE.local.md</code> … 個人用（gitignore 推奨）</li>
+      <li><code>~/.claude/CLAUDE.md</code> … 全プロジェクト共通の個人設定</li>
+      <li>サブディレクトリに置けば、そのフォルダ作業時のみ追加読み込み（→ 4章で活用）</li>
+    </ul>
+
+    <h3>書く中身（WHAT / WHY / HOW ＋ レッドライン ＋ Done）</h3>
+    <p style="font-size:14px;color:var(--mut);margin-top:4px">「何を・なぜ・どうやって」＋「触ってはいけない」＋「完了条件」が揃うと、エージェントが迷わず・暴走しにくい。以下は Laravel プロジェクトでの抜粋。</p>
+    <pre><span class="c"># sunshine-server</span>
+
+<span class="c">## WHAT — 技術スタック / 構造</span>
+- Laravel 10 / PHP 8.1 / MySQL 8.4 / Redis / Vue 3、AWS ECS Fargate
+- ローカルは Docker Compose（sunshine_app / _nginx / _mysql / _redis）
+- app/: Http/Controllers/{Api,Backend} / UseCase / Services / Repositories
+        / Models / ViewModels / Jobs / Enums
+- routes/: api.php(モバイル) / admin.php(管理) / auth.php(認証)
+
+<span class="c">## WHY — 目的</span>
+モバイルアプリ「マイサンシャインシティ」のバックエンド。
+スタンプ / クーポン / お知らせ / イベント等を提供し、マチパス・Epark と連携。
+
+<span class="c">## HOW — コマンド</span>
+- make up / work / down / format / openapi
+- テスト: php artisan test [--testsuite=Unit] [--filter=ClassName]
+- テストDB: sunshine_testing（初回のみ make create-testdb）
+
+<span class="c">## 規約（アーキテクチャ）</span>
+- 流れ: Model → Repository → UseCase/Service → Controller → ViewModel
+- 各層は Contract(interface) で DI、バインドは ServiceProvider
+- 定数は Model に定義（config ではない）
+- API 変更時はコントローラに #[OpenApi\Operation] 属性を付与
+- 命名はキャメルケース（PSR-12、make format で強制）
+
+<span class="c">## 規約（エラーハンドリング）</span>
+- ドメイン例外は app/Exceptions/ 配下に定義し UseCase/Service で throw
+- try-catch は Controller 層のみ。ドメイン例外 → 最後に Exception の順で catch
+- ログは Log::error()。重要操作は Log::withContext([...]) を付与
+  （os キーは TraceLog ミドルウェアが自動付与、個別追加不要）
+
+<span class="c">## 触ってはいけない（レッドライン）</span>
+- 生成物 docs/api/v1/openapi.json は手編集しない（make openapi で再生成）
+- DB マイグレーションは手動確認後のみ実行
+- 本番 / 開発DBに直接接続しない。.env / secrets は読まない・出力しない
+
+<span class="c">## Done の条件</span>
+- 対象テストが green ＋ make format 済み
+- API を変更したら make openapi を実行し差分を確認</pre>
+    <div class="note"><b>コツ：</b>ルールは「増やすのは失敗を見た時だけ／モデルが賢くなったら削る」。全部盛りにすると1行ごとの重みが下がり、かえって守られなくなる。<b>詳細なアーキ解説など“辞書的”な内容は Skills / references に逃がし</b>、CLAUDE.md は毎ターン効く要点に絞ると軽い。</div>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <!-- 2 hooks -->
+  <section id="hooks">
+    <span class="kick">2</span>
+    <h2 class="serif">hooks の使い方</h2>
+    <p class="lead">CLAUDE.md が「お願い」なら、hooks は「<b>強制</b>」。エージェントのライフサイクルの特定点でシェル等を実行し、通す / 止めるを決める。<code>.claude/settings.json</code> に書けばチーム全員に効く。</p>
+
+    <h3>主なイベント</h3>
+    <div class="tblwrap">
+    <table>
+      <tr><th>イベント</th><th>タイミング</th><th>典型用途</th></tr>
+      <tr><td><code>PreToolUse</code></td><td>ツール実行の直前</td><td>危険コマンドをブロック、承認ゲート</td></tr>
+      <tr><td><code>PostToolUse</code></td><td>ツール実行の直後</td><td>編集後に lint / 型 / test、自動整形</td></tr>
+      <tr><td><code>UserPromptSubmit</code></td><td>入力送信時</td><td>入力の検査・付帯情報の注入</td></tr>
+      <tr><td><code>Notification</code></td><td>通知発生時（承認待ち等）</td><td>デスクトップ通知・音</td></tr>
+      <tr><td><code>Stop</code></td><td>応答終了時</td><td>完了チェック・通知</td></tr>
+    </table>
+    </div>
+
+    <h3>設定例（.claude/settings.json）― 実プロジェクト版（Laravel + Docker）</h3>
+    <p style="font-size:14px;color:var(--mut);margin-top:4px">動作確認済みの構成。5つの hook を入れている。<b>settings.json は標準 JSON でコメント不可</b>なので、意味は下の箇条書きで補足する。</p>
+    <ul>
+      <li><b>PreToolUse / Bash（危険コマンド）：</b><code>rm -rf</code> / <code>dd</code> / <code>mkfs</code> / <code>DROP TABLE</code> / <code>chmod -R 777</code> などを検出し、実行前にブロック</li>
+      <li><b>PreToolUse / Bash（コミット前テスト）：</b><code>git commit</code> を含むコマンドの前に <code>php artisan test</code> を実行し、失敗したらコミットをブロック</li>
+      <li><b>PreToolUse / 編集（保護ブランチ）：</b><code>master</code> / <code>develop</code> への直接編集を禁止（feature ブランチを強制）</li>
+      <li><b>PostToolUse / 編集（自動整形）：</b><code>.php</code> を編集したら php-cs-fixer を自動実行</li>
+      <li><b>Notification / Stop：</b>承認待ち・作業完了を macOS のデスクトップ通知（音付き）で知らせる</li>
+    </ul>
+    <pre>{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json;d=json.load(sys.stdin);cmd=d.get('tool_input',{}).get('command','');any(p in cmd for p in ['rm -rf /','rm -rf ~','dd if=','mkfs','DROP TABLE','chmod -R 777','truncate /']) and print(json.dumps({'decision':'block','reason':'危険なコマンドの実行をブロックしました。直接ターミナルで実行してください。'}))\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,subprocess as sp;d=json.load(sys.stdin);cmd=d.get('tool_input',{}).get('command','');'git commit' not in cmd or (lambda r:r.returncode==0 or print(json.dumps({'decision':'block','reason':'テストが失敗したためコミットをブロックしました:\\n'+(r.stdout+r.stderr)[-500:]})))(sp.run(['docker','exec','sunshine_app','php','artisan','test'],capture_output=True,text=True,timeout=300))\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,subprocess as sp;d=json.load(sys.stdin);b=sp.run(['git','-C','/path/to/your-project','branch','--show-current'],capture_output=True,text=True).stdout.strip();b in ('master','develop') and print(json.dumps({'decision':'block','reason':b+'ブランチへの直接編集は禁止です。featureブランチで作業してください。'}))\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,subprocess as sp;d=json.load(sys.stdin);f=d.get('tool_input',{}).get('file_path','');f.endswith('.php') and sp.run(['docker','ps','--filter','name=sunshine_app','--filter','status=running','-q'],capture_output=True).stdout.strip() and sp.run(['docker','exec','sunshine_app','./vendor/bin/php-cs-fixer','fix','--using-cache=no',f.replace('/path/to/your-project/','')],capture_output=True)\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,subprocess as sp;d=json.load(sys.stdin);m=d.get('message','Claude Codeから通知')[:100];sp.run(['osascript','-e','display notification '+json.dumps(m)+' with title \\\"Claude Code\\\" sound name \\\"Glass\\\"'])\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys,json,subprocess as sp;d=json.load(sys.stdin);sp.run(['osascript','-e','display notification \\\"Claude Codeの作業が完了しました\\\" with title \\\"Claude Code\\\" sound name \\\"Glass\\\"'])\""
+          }
+        ]
+      }
+    ]
+  }
+}</pre>
+    <div class="note"><b>設計原則：</b>「成功は無言、失敗は饒舌」。通過時は何も返さず、失敗時だけ <code>decision: block</code> と reason を返すと、フィードバックがほぼ無料で、直すべき時だけ効く。hook は stdin に JSON（<code>tool_input</code> 等）を受け取る。</div>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <!-- 3 skills -->
+  <section id="skills">
+    <span class="kick">3</span>
+    <h2 class="serif">Skills（SKILL.md）の設定例</h2>
+    <p class="lead">再利用する手順・知識を <code>SKILL.md</code> にまとめ、<b>必要な時だけ context に読み込ませる</b>仕組み。「同じ説明を毎回書く」をやめられる。</p>
+
+    <h3>置き場所</h3>
+    <ul>
+      <li><code>.claude/skills/&lt;name&gt;/SKILL.md</code> … プロジェクト共有（git でチーム配布）</li>
+      <li><code>~/.claude/skills/&lt;name&gt;/SKILL.md</code> … 個人・全プロジェクト共通</li>
+    </ul>
+
+    <h3>フォルダ構成</h3>
+    <pre>.claude/skills/pr-review/
+  <span class="n">SKILL.md</span>        <span class="c"># 必須：frontmatter(name/description)＋手順</span>
+  scripts/        <span class="c"># 任意：決定的な処理スクリプト</span>
+  references/     <span class="c"># 任意：必要な時だけ読むドキュメント</span>
+  assets/         <span class="c"># 任意：出力に使うテンプレ・アイコン等</span></pre>
+
+    <h3>SKILL.md の中身（例：PRレビュー用）</h3>
+    <pre><span class="c">---</span>
+<span class="s">name</span>: pr-review
+<span class="s">description</span>: PR差分をレビューする時に使う。観点（N+1・入力検証・
+             例外処理）とコマンドをまとめたもの。
+<span class="c">---</span>
+
+<span class="c"># PR レビュー手順</span>
+1. `git diff main...HEAD` で差分を確認する
+2. 次の観点でチェックする
+   - N+1 クエリ / インデックス漏れ
+   - 入力バリデーション（zod があるか）
+   - 例外処理（握りつぶしていないか）
+3. 指摘は severity（high / mid / low）付きで箇条書き
+
+<span class="c">## 詳細な観点</span>
+- references/security-checklist.md を参照</pre>
+
+    <div class="note"><b>起動の肝は description：</b>「いつ使うか」を具体的に書くほど自動起動の精度が上がる（賢い説明より“退屈で具体的”が勝つ）。<code>name</code> はフォルダ名と一致必須。本体は短くし、詳細は <code>references/</code> に逃がすと、必要な時だけ context に載る（＝ progressive disclosure）。複数スキルや MCP をまとめて配布したい時は <b>plugin</b> にパッケージする。</div>
+
+    <div class="note warn"><b>Skills はどの層？　→ 実は「コンテキスト」でも「ハーネス」でもある。</b><br>
+    ・<b>コンテキスト面：</b>「何を・いつ渡すか」を制御する仕掛け。必要な時だけ知識を context に載せる progressive disclosure は、コンテキスト設計そのもの。<br>
+    ・<b>ハーネス面：</b>SKILL.md・scripts・plugin はモデルを包む足場の一部。再利用可能な“能力”として agent に組み込む＝ハーネスの構成要素。<br>
+    ・さらに<b>ループ面：</b>ループの5部品の1つでもある。<br>
+    → Skills は層をまたぐ「橋渡し」の存在、と捉えると位置づけがすっきりする。</div>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <!-- 4 phase -->
+  <section id="phase">
+    <span class="kick">4</span>
+    <h2 class="serif">フェーズ別のコンテキスト制御</h2>
+    <p class="lead">実装だけでなく要件定義〜設計でも使うなら、「毎ターン載る情報」をフェーズで出し分けたい。原則は<b>内容を切り替えるのではなく「場所（ディレクトリ）」か「セッション」で切る</b>こと。</p>
+
+    <h3>何が“毎ターン確実に”載るか</h3>
+    <ul>
+      <li>確実に載るのは、セッションの作業ディレクトリ(cwd)から<b>上へ辿って見つかる CLAUDE.md</b>（<code>/compact</code> 後も再読込される）</li>
+      <li>サブディレクトリの CLAUDE.md は<b>起動時には載らない</b>。そのフォルダのファイルを読んだ時にロードされる（＝場所に紐づく）</li>
+      <li><code>@import</code> は常時インライン展開（条件分岐にならず、トークンも減らない）。今ロード中の確認は <code>/memory</code></li>
+    </ul>
+
+    <h3>方法1 — ディレクトリ単位で CLAUDE.md を分割</h3>
+    <pre><span class="c">CLAUDE.md            # 共通の普遍情報だけ薄く（WHY / 地図 / レッドライン）</span>
+<span class="c">app/CLAUDE.md        # 実装フェーズの規約（アーキ・エラー処理・命名）</span>
+<span class="c">docs/spec/CLAUDE.md  # 要件定義フェーズ専用</span></pre>
+    <ul>
+      <li>実装の重い規約をルートから外し、<code>app/</code> 配下でだけ載るようにする</li>
+      <li>要件は <code>docs/spec/</code> の成果物を触りながら進めれば、要件用 CLAUDE.md が自然に載る</li>
+    </ul>
+
+    <h3>方法2 — フェーズごとにセッションを分ける（最も確実）</h3>
+    <ul>
+      <li>要件フェーズは <code>docs/spec/</code> を cwd にして起動 → その CLAUDE.md がトップ＝<b>毎ターン確実に載る</b></li>
+      <li>実装コンテキストと混ざらない（実装時に要件の細部が載らない・逆も同様）</li>
+    </ul>
+
+    <h3>方法3 — 「やり方」は Skill / カスタムコマンドへ</h3>
+    <ul>
+      <li>ユーザーストーリーの型・受入基準・DB設計チェックリスト・ヒアリング観点などの<b>方法論は実装の毎ターンには不要</b></li>
+      <li><code>requirements</code> スキル（自動起動）か、<code>.claude/commands/requirements.md</code>（<code>/requirements</code>、<code>$ARGUMENTS</code> で対象機能を渡す）でフェーズの頭に注入</li>
+    </ul>
+
+    <h3>要件フェーズ用 CLAUDE.md の例（docs/spec/CLAUDE.md）</h3>
+    <pre><span class="c"># 要件定義フェーズ（このフォルダ作業時のみ）</span>
+
+<span class="c">## 進め方</span>
+- この段階では実装・コード生成をしない（設計合意まで）
+- 成果物は docs/spec/&lt;チケットID&gt;/requirements.md に書く
+
+<span class="c">## 要件書フォーマット</span>
+- 背景 / ユーザーストーリー / 受入基準 / 非機能要件 / スコープ外
+
+<span class="c">## 詰める観点（ヒアリング）</span>
+- 対象ユーザーと利用文脈 / 既存機能との整合 / 例外系・エラー時の挙動
+
+<span class="c">## DB設計の規約</span>
+- テーブル名は複数形スネークケース / 論理削除は deleted_at
+- created_at・updated_at を必ず持つ / 金額は整数（最小単位）で保持</pre>
+    <div class="note warn"><b>効かせどころ：</b>「この段階では実装しない」をレッドラインで明記しておくと、要件を詰めている途中でエージェントが勝手にコードを書き始める事故を防げる。ルート CLAUDE.md は薄く保つほど、フェーズ別ファイルの1行が効く。</div>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <!-- 5 loop -->
+  <section id="loop">
+    <span class="kick">5</span>
+    <h2 class="serif">ループの上限・停止条件</h2>
+    <p class="lead">自走させる時は「いつ止まるか」を必ず先に決める。止まらない設計は事故のもと。</p>
+    <h3>停止条件を書く（検証可能な形で）</h3>
+    <ul>
+      <li><code>/goal</code>：<b>検証可能な完了条件が真になるまで</b>継続。毎ターン別の小モデルが達成を判定（作った本人に採点させない）。例：「<code>test/auth</code> が全 green かつ lint 0」</li>
+      <li><code>/loop</code>：一定間隔で再実行（cron 的）。無限に回さないよう回数・時刻の枠を決める</li>
+      <li>Agent SDK で組む場合：<code>maxTurns</code> 等でターン上限を設定し、暴走を物理的に止める</li>
+    </ul>
+    <h3>並列時の事故防止</h3>
+    <ul>
+      <li><code>git worktree</code> / <code>--worktree</code> で各エージェントを別チェックアウトに隔離（ファイル衝突の回避）</li>
+      <li>並列数の上限は「自分がレビューしきれる数」に合わせる（レビュー帯域がボトルネック）</li>
+    </ul>
+    <div class="note warn"><b>鉄則：</b>停止条件・最大ターン・最大時間・並列数の4つは、走らせる前に必ず決める。</div>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <!-- 6 token -->
+  <section id="token">
+    <span class="kick">6</span>
+    <h2 class="serif">トークン / コストの上限はどこで設定するか</h2>
+    <p class="lead">「使い方」ではなく「契約形態」で上限のかけ方が変わる。自分がどれで使っているかをまず確認する。</p>
+    <div class="tblwrap">
+    <table>
+      <tr><th>使い方</th><th>上限のかけ方 / 確認場所</th></tr>
+      <tr>
+        <td><b>サブスク</b><br>(Pro / Max)</td>
+        <td>ローリング<b>5時間セッション上限</b>＋<b>週次上限</b>で自動的に頭打ち（Pro＜Max5x＜Max20x）。使用中は <code>/status</code>・請求は <code>/cost</code> で確認。上限に達すると待機。</td>
+      </tr>
+      <tr>
+        <td><b>API 従量</b><br>(Console)</td>
+        <td>Console でティア別の<b>月間 spend cap</b>。その範囲内で<b>自分の spend limit</b>を下げて設定可（ティア上限は超えられない）。使用量アラートも設定可。</td>
+      </tr>
+      <tr>
+        <td><b>コンテキスト窓</b></td>
+        <td>全モデル <b>200K トークン</b>（一部 Enterprise は 500K）。長い作業は圧縮・分割前提で設計。</td>
+      </tr>
+      <tr>
+        <td><b>実行あたり</b></td>
+        <td>ループ / SDK 側で<b>最大ターン・最大時間</b>を設定（→ 5章）。サブエージェントは各自が課金対象なので、使いどころを絞る。</td>
+      </tr>
+    </table>
+    </div>
+    <h3>コストを膨らませない実務ルール</h3>
+    <ul>
+      <li>走らせる前に<b>予算（時間・回数）</b>を宣言してから始める</li>
+      <li>大きなツール出力はファイルへ退避（context を汚さない＝無駄トークン削減）</li>
+      <li>不要な MCP / ツールを外す（説明文が毎回課金対象の入力になる）</li>
+      <li>サブエージェントは「第二の意見が費用に見合う所」だけに投入</li>
+    </ul>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <!-- 7 start -->
+  <section id="start">
+    <span class="kick">7</span>
+    <h2 class="serif">最初の30分でやること</h2>
+    <ul>
+      <li>① <code>CLAUDE.md</code> を作り、コマンド・レッドライン・Done条件を10〜20行で書く（→ 1章）</li>
+      <li>② <code>.claude/settings.json</code> に PostToolUse（lint / 型）と PreToolUse（危険コマンド block）を1つずつ（→ 2章）</li>
+      <li>③ 使っている契約のコスト上限（サブスクの <code>/cost</code> or Console の spend limit）を一度見ておく（→ 6章）</li>
+      <li>④ 毎回説明している手順が1つあれば <code>.claude/skills/</code> に SKILL.md で切り出す（→ 3章）</li>
+      <li>⑤ 要件定義など別フェーズがあれば、<code>docs/spec/</code> に専用 CLAUDE.md を置き、場所で分ける（→ 4章）</li>
+      <li>⑥ 自走は <code>/goal</code> に検証可能な停止条件を書いてから、小さなタスクで試す（→ 5章）</li>
+      <li>⑦ 失敗が出たら、その場で CLAUDE.md か hook に1行足す（ラチェット）</li>
+    </ul>
+    <div class="note links">参考：<a href="https://code.claude.com/docs/en/hooks">Hooks reference</a> ／ <a href="https://code.claude.com/docs/en/costs">Manage costs</a> ／ <a href="https://support.claude.com/en/articles/14552983-models-usage-and-limits-in-claude-code">Models, usage, and limits in Claude Code</a></div>
+    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+  </section>
+
+  <p class="tail">— 別紙おわり —　本編：<a href="slides.html" style="color:var(--slate);font-weight:600">xxエンジニアリング（勉強会資料）</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="プロンプト・コンテキスト・ハーネス・ループ。4つの xx エンジニアリングを「設計対象が外へ広がる物語」として再構成した、インタラクティブ版勉強会資料。">
+<title>xxエンジニアリング — 設計対象は、外へ。</title>
+<style>
+  :root{
+    --bg:#0e1117; --bg2:#12161f; --panel:#171c27; --panel2:#1c2230;
+    --ink:#e8e4da; --sub:#b8bfc9; --mut:#8b93a0; --line:#2a3140; --line2:#39415380;
+    --amber:#e0a458; --teal:#4fd1c5; --terra:#e2673a; --violet:#8b8aeb; --slate:#7f9cc0;
+    --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+    --sans:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.9;
+    background-image:radial-gradient(1200px 600px at 80% -10%,#1a2233 0%,transparent 60%);}
+  ::selection{background:#e0a45833}
+
+  /* ---- progress bar ---- */
+  #prog{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--slate),var(--teal),var(--violet),var(--terra));z-index:99}
+
+  /* ---- side rail ---- */
+  nav#rail{position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:4px}
+  nav#rail a{display:flex;align-items:center;gap:10px;text-decoration:none;padding:5px 6px;border-radius:6px}
+  nav#rail .dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none;transition:all .25s}
+  nav#rail .lb{font-size:11px;color:var(--mut);letter-spacing:.08em;opacity:0;transform:translateX(-6px);transition:all .25s;white-space:nowrap}
+  nav#rail a:hover .lb{opacity:1;transform:none}
+  nav#rail a.on .dot{background:var(--amber);box-shadow:0 0 10px #e0a45866}
+  nav#rail a.on .lb{opacity:1;transform:none;color:var(--amber)}
+  @media(max-width:1160px){nav#rail{display:none}}
+
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px 140px}
+
+  /* ---- hero ---- */
+  .hero{min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:80px 0 60px;position:relative}
+  .hero .ey{font-size:12px;letter-spacing:.42em;color:var(--amber);font-weight:700;margin-bottom:26px}
+  .hero h1{font-family:var(--serif);font-size:clamp(44px,8vw,76px);line-height:1.12;letter-spacing:.02em;font-weight:600}
+  .hero h1 .xx{color:var(--amber)}
+  .hero .sub{font-family:var(--serif);font-size:clamp(19px,3vw,25px);color:var(--sub);margin-top:30px;line-height:1.9}
+  .hero .sub b{color:var(--ink);font-weight:600}
+  .hero .meta{margin-top:44px;display:flex;gap:14px;flex-wrap:wrap}
+  .hero .chip{font-size:12.5px;letter-spacing:.06em;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:5px 14px}
+  .hero .chip i{font-style:normal;margin-right:6px}
+  .scrollcue{position:absolute;bottom:26px;left:0;color:var(--mut);font-size:11px;letter-spacing:.3em;display:flex;align-items:center;gap:10px}
+  .scrollcue::after{content:"";width:44px;height:1px;background:var(--mut);display:block;animation:cue 2.2s infinite}
+  @keyframes cue{0%{transform:scaleX(.2);opacity:.2}50%{transform:scaleX(1);opacity:1}100%{transform:scaleX(.2);opacity:.2}}
+
+  /* ---- section scaffolding ---- */
+  section.ch{padding:96px 0 10px;scroll-margin-top:10px;position:relative}
+  .chhead{display:flex;align-items:baseline;gap:22px;margin-bottom:14px}
+  .chnum{font-family:var(--serif);font-size:clamp(64px,10vw,104px);line-height:1;color:transparent;
+    -webkit-text-stroke:1px #454f63;font-weight:600;flex:none;user-select:none}
+  .chkick{font-size:12px;letter-spacing:.3em;color:var(--amber);font-weight:700;margin-bottom:10px}
+  h2{font-family:var(--serif);font-size:clamp(27px,4.6vw,38px);line-height:1.4;font-weight:600;letter-spacing:.01em}
+  h2 .en{display:block;font-family:var(--sans);font-size:12.5px;letter-spacing:.24em;color:var(--mut);font-weight:600;margin-top:10px;text-transform:uppercase}
+  .prose{margin-top:26px}
+  .prose p{font-size:16.5px;color:var(--sub);margin:0 0 1.35em}
+  .prose p b,.prose li b{color:var(--ink);font-weight:600}
+  .prose .accent{color:var(--amber)}
+  .pull{font-family:var(--serif);font-size:clamp(20px,3.4vw,26px);line-height:1.85;color:var(--ink);
+    border-left:3px solid var(--amber);padding:6px 0 6px 26px;margin:44px 0}
+  .pull small{display:block;font-family:var(--sans);font-size:13px;color:var(--mut);margin-top:12px}
+  .pull small a{color:var(--slate)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 30px;margin:28px 0}
+  .card.tight{padding:20px 24px}
+  .card h3{font-size:16px;color:var(--ink);margin-bottom:8px;font-weight:700}
+  .card p{font-size:14.5px;color:var(--sub)}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:680px){.cols2,.cols3{grid-template-columns:1fr}}
+
+  ul.pts{list-style:none;margin:18px 0}
+  ul.pts li{padding:8px 0 8px 26px;position:relative;font-size:15.5px;color:var(--sub)}
+  ul.pts li::before{content:"";position:absolute;left:2px;top:18px;width:8px;height:2px;background:var(--amber)}
+
+  figure{margin:34px 0 8px}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{font-size:12.5px;color:var(--mut);text-align:center;margin-top:12px;letter-spacing:.04em}
+
+  pre{background:#0a0d13;border:1px solid var(--line);color:#d7dce4;border-radius:12px;padding:18px 20px;overflow:auto;
+    font-family:var(--mono);font-size:13px;line-height:1.7;margin:18px 0}
+  pre .c{color:#5f6b7d}
+  code.inline{background:#1d2432;border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-family:var(--mono);font-size:12.5px;color:var(--teal)}
+
+  .note{border:1px solid var(--line);border-left:3px solid var(--terra);background:var(--panel);
+    border-radius:0 12px 12px 0;padding:16px 20px;margin:24px 0;font-size:14.5px;color:var(--sub)}
+  .note b{color:var(--terra)}
+
+  /* ---- interactive: ring map ---- */
+  .ringbox{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:center;margin-top:30px}
+  @media(max-width:760px){.ringbox{grid-template-columns:1fr}}
+  .ring{cursor:pointer;transition:opacity .25s}
+  .ring circle{transition:stroke-width .25s, filter .25s}
+  .legend{display:flex;flex-direction:column;gap:10px}
+  .lg{border:1px solid var(--line);border-radius:12px;padding:14px 18px;background:var(--panel);cursor:pointer;transition:all .22s;border-left-width:3px}
+  .lg h4{font-size:15px;color:var(--ink)}
+  .lg h4 span{font-size:11.5px;color:var(--mut);letter-spacing:.14em;margin-left:8px}
+  .lg p{font-size:13px;color:var(--mut);line-height:1.7;margin-top:3px}
+  .lg.hot{background:var(--panel2);transform:translateX(4px)}
+  .lg[data-k="l1"]{border-left-color:var(--slate)} .lg[data-k="l2"]{border-left-color:var(--teal)}
+  .lg[data-k="l3"]{border-left-color:var(--violet)} .lg[data-k="l4"]{border-left-color:var(--terra)}
+
+  /* ---- interactive: rot slider ---- */
+  .rotlab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .rotlab .st{font-size:14px;font-weight:700}
+  .rotlab .pv{font-family:var(--mono);font-size:13px;color:var(--mut)}
+  .winbar{height:34px;border:1px solid var(--line);border-radius:9px;background:#0a0d13;overflow:hidden;display:flex}
+  .winbar .seg{height:100%;transition:width .18s ease}
+  .winbar .s1{background:#2b6f68}.winbar .s2{background:#3d5a80}.winbar .s3{background:#565498}.winbar .s4{background:#8a5a28}
+  input[type=range]{width:100%;margin:18px 0 6px;accent-color:var(--amber);cursor:pointer}
+  .gauge{display:flex;align-items:center;gap:14px;margin-top:14px}
+  .gauge .bar{flex:1;height:10px;border-radius:6px;background:#0a0d13;border:1px solid var(--line);overflow:hidden}
+  .gauge .fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--amber),var(--teal));transition:width .18s}
+  .gauge .num{font-family:var(--mono);font-size:20px;width:86px;text-align:right}
+  .rotmsg{margin-top:12px;font-size:14px;color:var(--sub);min-height:1.6em}
+  .rotmsg b{color:var(--amber)}
+
+  /* ---- interactive: harness explorer ---- */
+  .hexp{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start;margin-top:28px}
+  @media(max-width:760px){.hexp{grid-template-columns:1fr}}
+  .hnode{cursor:pointer}
+  .hnode circle.pad{fill:transparent}
+  .hnode .bub{fill:#1d2432;stroke:#39445c;transition:all .2s}
+  .hnode text{fill:#c9d2de;font-size:12px}
+  .hnode.on .bub{fill:#2a3a55;stroke:var(--amber)}
+  .hnode.on text{fill:#fff}
+  .hpanel{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:22px 24px;min-height:230px}
+  .hpanel .tag{font-size:11px;letter-spacing:.22em;color:var(--amber);font-weight:700}
+  .hpanel h4{font-size:18px;margin:8px 0 10px;color:var(--ink);font-family:var(--serif)}
+  .hpanel p{font-size:14.5px;color:var(--sub)}
+  .hpanel .ex{margin-top:14px;font-size:13px;color:var(--mut);border-top:1px dashed var(--line);padding-top:12px}
+  .hpanel .ex b{color:var(--teal);font-weight:600}
+
+  /* ---- before/after flip ---- */
+  .flip{margin-top:26px}
+  .flipbtns{display:flex;gap:8px;margin-bottom:14px}
+  .flipbtns button{font-family:var(--sans);font-size:13.5px;font-weight:700;letter-spacing:.06em;padding:8px 22px;border-radius:999px;
+    border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;transition:all .2s}
+  .flipbtns button.on{background:var(--amber);border-color:var(--amber);color:#0e1117}
+  .flippane{display:none}
+  .flippane.on{display:grid;grid-template-columns:1fr;gap:10px;animation:fin .35s ease}
+  @keyframes fin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .fitem{border:1px solid var(--line);border-radius:12px;padding:14px 20px;background:var(--panel);font-size:15px;color:var(--sub);display:flex;gap:14px;align-items:baseline}
+  .fitem .mk{font-family:var(--mono);font-size:12px;flex:none;width:20px}
+  .flippane[data-p="before"] .mk{color:var(--terra)} .flippane[data-p="after"] .mk{color:var(--teal)}
+
+  /* ---- checklist ---- */
+  .ckhead{display:flex;justify-content:space-between;align-items:center;margin:26px 0 14px}
+  .ckhead .cnt{font-family:var(--mono);font-size:14px;color:var(--mut)}
+  .ckbar{height:8px;border-radius:5px;background:#0a0d13;border:1px solid var(--line);overflow:hidden;margin-bottom:18px}
+  .ckbar .f{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--amber));transition:width .3s}
+  .ck{list-style:none}
+  .ck li{border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:8px 0;padding:13px 18px;
+    display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:all .2s;font-size:15px;color:var(--sub)}
+  .ck li:hover{background:var(--panel2)}
+  .ck .box{flex:none;width:20px;height:20px;border:1.5px solid var(--mut);border-radius:6px;margin-top:4px;position:relative;transition:all .2s}
+  .ck li.done{opacity:.55}
+  .ck li.done .box{background:var(--teal);border-color:var(--teal)}
+  .ck li.done .box::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#0e1117;font-size:13px;font-weight:800}
+  .ck li.done .tx{text-decoration:line-through}
+  .ck .tx b{color:var(--ink)}
+  .ck .tx small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+
+  /* ---- reveal ---- */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+  .rv.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  /* ---- misc ---- */
+  .hr{border:none;border-top:1px solid var(--line);margin:70px 0 0}
+  .links p{font-size:14.5px;line-height:2.1;color:var(--sub)}
+  a{color:var(--slate)}
+  .tail{text-align:center;color:var(--mut);font-size:12.5px;margin-top:90px;letter-spacing:.06em}
+  .tail a{color:var(--slate)}
+  .dash{stroke-dasharray:6 7;animation:flow 1.6s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-13}}
+  @media print{
+    body{background:#fff;color:#111}
+    #prog,nav#rail,.scrollcue{display:none}
+    .rv{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<nav id="rail" aria-label="ページ内ナビゲーション">
+  <a href="#intro"><span class="dot"></span><span class="lb">導入 — 差はどこから</span></a>
+  <a href="#map"><span class="dot"></span><span class="lb">地図 — 4つの同心円</span></a>
+  <a href="#l1"><span class="dot"></span><span class="lb">第1層 プロンプト</span></a>
+  <a href="#l2"><span class="dot"></span><span class="lb">第2層 コンテキスト</span></a>
+  <a href="#l3"><span class="dot"></span><span class="lb">第3層 ハーネス</span></a>
+  <a href="#l4"><span class="dot"></span><span class="lb">第4層 ループ</span></a>
+  <a href="#shift"><span class="dot"></span><span class="lb">転換 — レバレッジ</span></a>
+  <a href="#risk"><span class="dot"></span><span class="lb">落とし穴</span></a>
+  <a href="#action"><span class="dot"></span><span class="lb">明日の一歩</span></a>
+  <a href="#end"><span class="dot"></span><span class="lb">持ち帰り</span></a>
+</nav>
+
+<div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <div class="ey">社内勉強会 / LT — REDESIGNED EDITION</div>
+    <h1><span class="xx">xx</span> エンジニアリング</h1>
+    <p class="sub">「賢い一文」を探す仕事は、終わりつつある。<br>
+    プロンプト、コンテキスト、ハーネス、ループ——<br>
+    4つの“xx”を貫くのは、<b>設計対象が外へ広がり続ける</b>という一つの物語。</p>
+    <div class="meta">
+      <span class="chip"><i style="color:var(--slate)">●</i>プロンプト</span>
+      <span class="chip"><i style="color:var(--teal)">●</i>コンテキスト</span>
+      <span class="chip"><i style="color:var(--violet)">●</i>ハーネス</span>
+      <span class="chip"><i style="color:var(--terra)">●</i>ループ</span>
+    </div>
+    <div class="scrollcue">SCROLL</div>
+  </header>
+
+  <!-- ================= INTRO ================= -->
+  <section class="ch" id="intro">
+    <div class="chhead rv">
+      <div class="chnum">00</div>
+      <div>
+        <div class="chkick">PROLOGUE</div>
+        <h2>同じモデルなのに、なぜ差が出るのか<span class="en">Where the difference comes from</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>同じツール、同じモデル、同じ月額。それなのに、隣のチームは実装をまるごと任せて回しているのに、こちらは毎回チャットに張り付いて手直しをしている——この差は、モデルの賢さでは説明できない。</p>
+      <p>差を生んでいるのは、<b>モデルの周りにあるもの</b>だ。何を読ませているか。何を強制しているか。失敗をどこに記録しているか。誰が次の指示を出しているか。</p>
+      <p>この資料では、その「周り」を設計する4つの技術を、<span class="accent">内側から外側へ</span>順番に歩いていく。キーワードは一つ。設計対象は、外へ。</p>
+    </div>
+  </section>
+
+  <!-- ================= MAP ================= -->
+  <section class="ch" id="map">
+    <div class="chhead rv">
+      <div class="chnum">01</div>
+      <div>
+        <div class="chkick">THE MAP</div>
+        <h2>4つの同心円<span class="en">Four concentric circles</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>4つの xx は流行の交代劇ではない。<b>内側の円を土台に、外側へ設計対象が広がってきた積み上げ</b>だ。円をなぞってみてほしい——1つの文、渡す情報、実行環境、そしてプロセス全体へ。</p>
+    </div>
+    <div class="ringbox rv">
+      <svg viewBox="0 0 460 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4つの同心円。内側からプロンプト、コンテキスト、ハーネス、ループ" font-family="sans-serif">
+        <g class="ring" data-k="l4"><circle cx="230" cy="230" r="208" fill="none" stroke="#e2673a" stroke-width="2" opacity=".85"/><text x="230" y="38" fill="#e2673a" font-size="13" font-weight="700" text-anchor="middle">④ ループ</text></g>
+        <g class="ring" data-k="l3"><circle cx="230" cy="230" r="158" fill="none" stroke="#8b8aeb" stroke-width="2" opacity=".85"/><text x="230" y="90" fill="#8b8aeb" font-size="13" font-weight="700" text-anchor="middle">③ ハーネス</text></g>
+        <g class="ring" data-k="l2"><circle cx="230" cy="230" r="108" fill="none" stroke="#4fd1c5" stroke-width="2" opacity=".85"/><text x="230" y="140" fill="#4fd1c5" font-size="13" font-weight="700" text-anchor="middle">② コンテキスト</text></g>
+        <g class="ring" data-k="l1"><circle cx="230" cy="230" r="58" fill="#7f9cc022" stroke="#7f9cc0" stroke-width="2"/><text x="230" y="226" fill="#c9d6e6" font-size="13" font-weight="700" text-anchor="middle">① プロンプト</text><text x="230" y="246" fill="#8b93a0" font-size="10.5" text-anchor="middle">1つの指示文</text></g>
+        <line x1="230" y1="230" x2="448" y2="230" stroke="#39415380" stroke-width="1"/>
+        <text x="300" y="222" fill="#8b93a0" font-size="10.5">情報</text>
+        <text x="352" y="222" fill="#8b93a0" font-size="10.5">環境</text>
+        <text x="404" y="222" fill="#8b93a0" font-size="10.5">プロセス</text>
+      </svg>
+      <div class="legend">
+        <div class="lg" data-k="l1"><h4>① プロンプト<span>HOW TO ASK</span></h4><p>どう聞くか。1回の応答の質を上げる。設計対象は「1つの指示文」。</p></div>
+        <div class="lg" data-k="l2"><h4>② コンテキスト<span>WHAT TO FEED</span></h4><p>何を渡すか。モデルが今アクセスできる情報の全体を設計する。</p></div>
+        <div class="lg" data-k="l3"><h4>③ ハーネス<span>WHAT SURROUNDS</span></h4><p>周りをどう作るか。ツール・強制・検証。モデル以外の全部。</p></div>
+        <div class="lg" data-k="l4"><h4>④ ループ<span>WHO PROMPTS</span></h4><p>誰が回すか。「プロンプトする」という行為自体を仕組みにする。</p></div>
+      </div>
+    </div>
+    <figcaption class="rv" style="display:block">円にカーソルを乗せる／タップすると対応がハイライトされます</figcaption>
+  </section>
+
+  <!-- ================= LAYER 1 ================= -->
+  <section class="ch" id="l1">
+    <div class="chhead rv">
+      <div class="chnum">02</div>
+      <div>
+        <div class="chkick">LAYER 1 — PROMPT ENGINEERING</div>
+        <h2>職人芸の時代<span class="en">How to ask</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>この2年の主役。役割を与える、手順を分解させる、良い例と悪い例を見せる、出力の型を指定する。タスクごとに“効く一文”は違うから、探し当てる腕が問われた。<b>それは価値ある職人芸だった</b>し、今も土台であり続けている。</p>
+      <p>ただし限界もはっきりしている。プロンプトが最適化できるのは<b>1ターンの応答</b>まで。モデルはコンテキストの外を何も覚えていない。10ステップ動くエージェントに必要なのは「良い一文」ではなく、10ステップぶんの<b>足場</b>だ。</p>
+    </div>
+    <div class="card tight rv">
+      <p style="font-size:14px"><b style="color:var(--amber)">この層の設計単位：</b>役割 ＋ 手順分解（step by step）＋ few-shot ＋ 出力フォーマット ＝ よく効く1つの指示文。<b>ここで終わると、成果は毎回モデルの機嫌に左右される。</b></p>
+    </div>
+  </section>
+
+  <!-- ================= LAYER 2 ================= -->
+  <section class="ch" id="l2">
+    <div class="chhead rv">
+      <div class="chnum">03</div>
+      <div>
+        <div class="chkick">LAYER 2 — CONTEXT ENGINEERING</div>
+        <h2>記憶は有限資源である<span class="en">What to feed</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>問いを「どう言うか」から、モデルが<b>今アクセスすべき情報の全体</b>をどう組むかへ。システムプロンプト、会話履歴、検索結果、ツール定義、メモリ——窓に載るものすべてが設計対象になる。Claude Code なら <code class="inline">CLAUDE.md</code> がその代表格だ。</p>
+      <p>そして重要な事実がひとつ。<b>コンテキストウィンドウは埋まるほど濁る</b>。窓が混雑すると、重要な指示が埋もれ、推論の精度が落ちていく。いわゆる <b>context rot</b>。だからこの層の設計は「足す」より「引く」——スライダーで体感してみてほしい。</p>
+    </div>
+    <div class="card rv">
+      <div class="rotlab"><span class="st" id="rotstate">快適圏</span><span class="pv">ウィンドウ使用率 <span id="rotpct">18</span>%</span></div>
+      <div class="winbar" aria-hidden="true">
+        <div class="seg s1" id="sg1"></div><div class="seg s2" id="sg2"></div><div class="seg s3" id="sg3"></div><div class="seg s4" id="sg4"></div>
+      </div>
+      <input type="range" id="rot" min="0" max="100" value="18" aria-label="コンテキストウィンドウの使用率">
+      <div class="gauge">
+        <span style="font-size:12.5px;color:var(--mut);letter-spacing:.08em;flex:none">推論の安定度</span>
+        <div class="bar"><div class="fill" id="gfill"></div></div>
+        <span class="num" id="gnum">96%</span>
+      </div>
+      <p class="rotmsg" id="rotmsg"></p>
+    </div>
+    <ul class="pts rv">
+      <li><b>何を残し、何を外すか</b>が勝負。履歴の圧縮、不要ツールの排除、大きな出力のファイル退避</li>
+      <li>必要なときだけ知識を載せる ＝ Skills の <b>progressive disclosure</b>（詳細は別紙2・3章）</li>
+    </ul>
+    <blockquote class="pull rv">“context engineering is in, and prompt engineering is out”
+      <small>— Gartner（2025年7月）。エージェント成功の最大の予測因子はモデル選定よりコンテキスト設計、という論調。<a href="https://www.gartner.com/en/articles/context-engineering">出典 ↗</a></small>
+    </blockquote>
+  </section>
+
+  <!-- ================= LAYER 3 ================= -->
+  <section class="ch" id="l3">
+    <div class="chhead rv">
+      <div class="chnum">04</div>
+      <div>
+        <div class="chkick">LAYER 3 — HARNESS ENGINEERING</div>
+        <h2>馬ではなく、馬具を作る<span class="en">What surrounds the model</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>“harness” の原義は<b>馬具</b>。どれほど速い馬でも、頭絡と手綱がなければ目的地には着かない。馬（モデル）を育てるのは研究所の仕事。私たちの仕事は、<b>馬具一式を設計すること</b>だ。</p>
+      <p>定義はシンプルに割り切れる。<span class="accent" style="font-family:var(--serif);font-size:19px">Agent ＝ Model ＋ Harness.</span> モデルでない部分は、全部ハーネス。下の図の部品をクリックして、それぞれの役割を確かめてほしい。</p>
+    </div>
+    <div class="hexp rv">
+      <svg viewBox="0 0 440 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="中心のモデルを6つのハーネス部品が取り囲む探索図" font-family="sans-serif" id="hsvg">
+        <circle cx="220" cy="200" r="168" fill="none" stroke="#2a3140" stroke-width="1.5" class="dash" style="animation-duration:30s"/>
+        <circle cx="220" cy="200" r="56" fill="#3d5a80"/>
+        <text x="220" y="196" fill="#fff" font-size="15" font-weight="700" text-anchor="middle">MODEL</text>
+        <text x="220" y="215" fill="#cdd8e6" font-size="10.5" text-anchor="middle">（交換可能）</text>
+        <g class="hnode" data-k="claude" transform="translate(220,32)"><circle class="pad" r="34"/><rect class="bub" x="-58" y="-16" width="116" height="32" rx="16"/><text text-anchor="middle" y="5">CLAUDE.md</text></g>
+        <g class="hnode" data-k="tools" transform="translate(64,120)"><circle class="pad" r="34"/><rect class="bub" x="-56" y="-16" width="112" height="32" rx="16"/><text text-anchor="middle" y="5">ツール / MCP</text></g>
+        <g class="hnode" data-k="hooks" transform="translate(64,280)"><circle class="pad" r="34"/><rect class="bub" x="-44" y="-16" width="88" height="32" rx="16"/><text text-anchor="middle" y="5">hooks</text></g>
+        <g class="hnode" data-k="sandbox" transform="translate(220,368)"><circle class="pad" r="34"/><rect class="bub" x="-62" y="-16" width="124" height="32" rx="16"/><text text-anchor="middle" y="5">サンドボックス</text></g>
+        <g class="hnode" data-k="sub" transform="translate(376,280)"><circle class="pad" r="34"/><rect class="bub" x="-68" y="-16" width="136" height="32" rx="16"/><text text-anchor="middle" y="5">サブエージェント</text></g>
+        <g class="hnode" data-k="memory" transform="translate(376,120)"><circle class="pad" r="34"/><rect class="bub" x="-58" y="-16" width="116" height="32" rx="16"/><text text-anchor="middle" y="5">メモリ / 検索</text></g>
+      </svg>
+      <div class="hpanel" id="hpanel">
+        <span class="tag" id="hp-tag">HARNESS PARTS</span>
+        <h4 id="hp-title">部品を選んでください</h4>
+        <p id="hp-desc">左の図の6つの部品は、どれも「モデルに賢さを足す」ものではない。モデルの賢さを<b>取りこぼさない</b>ための足場だ。</p>
+        <p class="ex" id="hp-ex"><b>ヒント：</b>タップ / クリックで切り替わります。</p>
+      </div>
+    </div>
+    <div class="prose rv" style="margin-top:34px">
+      <p>この層には、姿勢の転換がひとつ含まれている。エージェントが失敗したとき、「モデルがまだ賢くない」と言うのは簡単だ。しかしその失敗の多くは、規約に書いていない・強制していない・検証していない——つまり<b>“skill issue”、設定の問題</b>である。</p>
+      <p>だから運用は<b>ラチェット（逆戻り防止の爪）</b>になる。失敗を1回見るたびに、CLAUDE.md か hook に1行刻む。同じ失敗は二度と起こらない。足場は失敗の数だけ強くなる。</p>
+    </div>
+    <div class="note rv"><b>効果の実例：</b>Terminal Bench 2.0 で、モデルは同じままハーネスだけを作り込んで <b>Top30 → Top5</b> へ。「良いモデル × 雑な足場」より「そこそこのモデル × 良い足場」が勝つ。</div>
+  </section>
+
+  <!-- ================= LAYER 4 ================= -->
+  <section class="ch" id="l4">
+    <div class="chhead rv">
+      <div class="chnum">05</div>
+      <div>
+        <div class="chkick">LAYER 4 — LOOP ENGINEERING</div>
+        <h2>自分の仕事を、コードにする<span class="en">Who prompts the model</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>最後の円では、視点がもう一段外に出る。ハーネスを整えても、毎ターン人間が指示を打っているなら、ボトルネックは人間の指だ。ならば——<b>「指示を出す」という行為そのものを仕組みにできないか？</b></p>
+    </div>
+    <blockquote class="pull rv">“I don't prompt Claude anymore. I have loops running that prompt Claude. My job is to write loops.”
+      <small>— Boris Cherny（Anthropic / Claude Code 責任者）。<a href="https://x.com/PawelHuryn/status/2069363303952818474">発言クリップ（X）↗</a> ／ <a href="https://thenewstack.io/loop-engineering/">解説記事（The New Stack）↗</a></small>
+    </blockquote>
+    <figure class="rv">
+      <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="発見・割当・実装・検証・記録が循環するループ図" font-family="sans-serif">
+        <circle cx="360" cy="160" r="118" fill="none" stroke="#e2673a" stroke-width="2" class="dash"/>
+        <circle cx="360" cy="160" r="56" fill="#e2673a"/>
+        <text x="360" y="156" fill="#fff" font-size="15" font-weight="700" text-anchor="middle">LOOP</text>
+        <text x="360" y="175" fill="#f7d9c9" font-size="10.5" text-anchor="middle">人は設計だけ</text>
+        <g font-size="12" text-anchor="middle">
+          <g><circle cx="360" cy="42" r="31" fill="#1d2432" stroke="#39445c"/><text x="360" y="39" fill="#c9d2de">発見</text><text x="360" y="54" fill="#8b93a0" font-size="10">トリアージ</text></g>
+          <g><circle cx="472" cy="86" r="31" fill="#1d2432" stroke="#39445c"/><text x="472" y="83" fill="#c9d2de">割当</text><text x="472" y="98" fill="#8b93a0" font-size="10">worktree</text></g>
+          <g><circle cx="472" cy="234" r="31" fill="#1d2432" stroke="#39445c"/><text x="472" y="231" fill="#c9d2de">実装</text><text x="472" y="246" fill="#8b93a0" font-size="10">subagent</text></g>
+          <g><circle cx="248" cy="234" r="31" fill="#134e4a" stroke="#4fd1c5"/><text x="248" y="231" fill="#d9f5f2">検証</text><text x="248" y="246" fill="#9fd9d3" font-size="10">verifier</text></g>
+          <g><circle cx="248" cy="86" r="31" fill="#1d2432" stroke="#39445c"/><text x="248" y="83" fill="#c9d2de">記録</text><text x="248" y="98" fill="#8b93a0" font-size="10">memory</text></g>
+        </g>
+        <g fill="#8b93a0" font-size="11.5">
+          <text x="600" y="120">部品は5つ ——</text>
+          <text x="600" y="142">スケジュール実行</text>
+          <text x="600" y="162">worktree 並列分離</text>
+          <text x="600" y="182">スキル</text>
+          <text x="600" y="202">MCP / プラグイン連携</text>
+          <text x="600" y="222">サブエージェント</text>
+        </g>
+      </svg>
+      <figcaption>発見 → 割当 → 実装 → 検証 → 記録。検証（verifier）だけ色が違うのは、そこが品質の生命線だから</figcaption>
+    </figure>
+    <div class="prose rv">
+      <p>ループを支えるのが<b>外部メモリ</b>（md ファイルや Linear）だ。「済み・未」を会話の外に置くことで、毎回ゼロから始めなくてよくなる。会話は消えるが、メモリは積み上がる。</p>
+      <p>ここまで来ると、人間の役割は明確になる。<b>ループを書くこと。そして、ループが吐くものを検証する基準を書くこと。</b>手を動かす場所が、また一段外へ移った。</p>
+    </div>
+  </section>
+
+  <!-- ================= SHIFT ================= -->
+  <section class="ch" id="shift">
+    <div class="chhead rv">
+      <div class="chnum">06</div>
+      <div>
+        <div class="chkick">INTERLUDE</div>
+        <h2>レバレッジは移動する<span class="en">The leverage keeps moving</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>ふりかえると、変わってきたのは技術そのものより<b>「どこに力をかけると一番効くか」という点の位置</b>だ。1文 → 情報 → 環境 → プロセス。いま費用対効果が最も高いのは、多くのチームにとって<b>ハーネス</b>の設計。ループはその先にある。</p>
+    </div>
+    <figure class="rv">
+      <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="レバレッジの位置がプロンプトからループへ移動する時間軸" font-family="sans-serif">
+        <line x1="40" y1="100" x2="680" y2="100" stroke="#2a3140" stroke-width="2"/>
+        <polygon points="692,100 678,94 678,106" fill="#2a3140"/>
+        <g text-anchor="middle">
+          <g><circle cx="120" cy="100" r="8" fill="#7f9cc0"/><text x="120" y="80" font-size="13" fill="#c9d2de">プロンプト</text><text x="120" y="126" font-size="10.5" fill="#8b93a0">1文を磨く</text></g>
+          <g><circle cx="290" cy="100" r="8" fill="#4fd1c5"/><text x="290" y="80" font-size="13" fill="#c9d2de">コンテキスト</text><text x="290" y="126" font-size="10.5" fill="#8b93a0">情報を設計</text></g>
+          <g><circle cx="470" cy="100" r="13" fill="#8b8aeb"/><circle cx="470" cy="100" r="20" fill="none" stroke="#8b8aeb" stroke-width="1.5" opacity=".5" class="dash"/><text x="470" y="72" font-size="14" fill="#b9b8f5" font-weight="700">ハーネス</text><text x="470" y="126" font-size="10.5" fill="#8b93a0">環境を設計 — いまここ</text></g>
+          <g><circle cx="630" cy="100" r="8" fill="#e2673a"/><text x="630" y="80" font-size="13" fill="#c9d2de">ループ</text><text x="630" y="126" font-size="10.5" fill="#8b93a0">プロセスを設計</text></g>
+        </g>
+      </svg>
+    </figure>
+    <div class="prose rv">
+      <p>そしてこれは終わらない。モデルが賢くなるたびに足場が不要になるのではなく、<b>足場ごと、より高いタスクへ引っ越す</b>だけだ。「賢い一文を探す人」から「賢く動く環境を設計する人」へ——役割の重心は、静かに、しかし確実に移っている。</p>
+    </div>
+  </section>
+
+  <!-- ================= RISK ================= -->
+  <section class="ch" id="risk">
+    <div class="chhead rv">
+      <div class="chnum">07</div>
+      <div>
+        <div class="chkick">CAUTION</div>
+        <h2>設計なき自走は、ゴミを量産する<span class="en">The garbage machine problem</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>ここまでの話には、強い注意書きが要る。ハーネスを作り込まずにループだけ回すと、それは<b>トークンを燃やしながらミスを無人で量産する装置</b>になる。しかも請求は正確に届く。</p>
+    </div>
+    <div class="cols2 rv">
+      <div class="card tight"><h3 style="color:var(--terra)">コスト暴走</h3><p>ループもサブエージェントも各自が課金対象。並列 × 繰り返しで消費は一気に膨らみ、“回しっぱなし”は青天井になりうる。</p></div>
+      <div class="card tight"><h3 style="color:var(--terra)">Done の自己申告</h3><p>verifier を分けないと「できました」が自己採点になる。動かないコードに、動いた分だけ課金される。</p></div>
+      <div class="card tight"><h3 style="color:var(--terra)">理解の空洞化</h3><p>自分で書いていないコードが増えるほど、実態と理解の差が開く（comprehension debt）。ループが速いほど負債も速い。</p></div>
+      <div class="card tight"><h3 style="color:var(--terra)">丸投げへの退化</h3><p>回り出すと出力をそのまま採用したくなる。設計者が「ボタンを押す人」になった時点で、品質の下り坂が始まる。</p></div>
+    </div>
+    <figure class="rv">
+      <svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="設計ありは消費が頭打ち、設計なしは青天井に伸びるグラフ" font-family="sans-serif">
+        <line x1="60" y1="160" x2="680" y2="160" stroke="#2a3140" stroke-width="1.5"/>
+        <line x1="60" y1="18" x2="60" y2="160" stroke="#2a3140" stroke-width="1.5"/>
+        <text x="60" y="12" font-size="11" fill="#8b93a0">トークン消費 / 費用</text>
+        <text x="650" y="178" font-size="11" fill="#8b93a0">時間 →</text>
+        <polyline points="60,158 180,148 300,141 420,137 540,134 660,132" fill="none" stroke="#4fd1c5" stroke-width="2.5"/>
+        <text x="668" y="132" font-size="11" fill="#4fd1c5" text-anchor="end">設計あり：頭打ち</text>
+        <path d="M60,158 C260,156 360,140 460,102 S600,34 660,20" fill="none" stroke="#e2673a" stroke-width="2.5"/>
+        <text x="450" y="62" font-size="11" fill="#e2673a">設計なし：青天井</text>
+      </svg>
+    </figure>
+    <div class="note rv"><b>4つの安全装置</b>（走らせる前に必ず）：① 予算と上限——トークン・実行回数・最大時間を先に決める ② Done 条件を検証可能な形で書く ③ 検証は人間が持つ——作る人と確かめる人を分ける ④ 小さく試してから広げる。<b>設計する人であり続けること</b>が、すべての前提。</div>
+  </section>
+
+  <!-- ================= ACTION ================= -->
+  <section class="ch" id="action">
+    <div class="chhead rv">
+      <div class="chnum">08</div>
+      <div>
+        <div class="chkick">HANDS-ON</div>
+        <h2>明日の一歩 — 効き目の順に<span class="en">Start here tomorrow</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>理屈はもういい、どこから触るか。答えは<b>ハーネスから</b>。難しい自動ループより先に、足場を3点だけ整える。CLAUDE.md はたとえばこの程度で十分に効く。</p>
+    </div>
+    <pre class="rv"><span class="c"># プロジェクト規約（毎ターン読み込まれる）</span>
+## コマンド
+- テスト:   pnpm test ／ Lint・型:  pnpm lint && pnpm typecheck
+## 規約
+- パッケージマネージャは pnpm 固定（npm / yarn 禁止）
+- ログは logger を使う（console.log 禁止）
+## 触ってはいけない
+- /legacy 配下は変更しない ／ DB マイグレーションは手動確認後のみ
+## Done の条件
+- 対象テストが green ＋ lint / 型エラー 0</pre>
+    <div class="ckhead rv"><h3 style="font-size:16px">スターター・チェックリスト</h3><span class="cnt"><span id="ckn">0</span> / 7</span></div>
+    <div class="ckbar rv"><div class="f" id="ckf"></div></div>
+    <ul class="ck rv" id="cklist">
+      <li><span class="box"></span><span class="tx"><b>CLAUDE.md を書く</b>（10〜20行）<small>コマンド・レッドライン・Done 条件だけ。60行を超えたら削る</small></span></li>
+      <li><span class="box"></span><span class="tx"><b>hooks を2本入れる</b><small>PreToolUse で危険コマンドをブロック ＋ PostToolUse で lint / 型を自動実行</small></span></li>
+      <li><span class="box"></span><span class="tx"><b>コスト上限の場所を確認する</b><small>サブスクなら /cost、API なら Console の spend limit を一度見ておく</small></span></li>
+      <li><span class="box"></span><span class="tx"><b>毎回説明している手順を SKILL.md に切り出す</b><small>description は「いつ使うか」を退屈なほど具体的に</small></span></li>
+      <li><span class="box"></span><span class="tx"><b>フェーズ別に CLAUDE.md を分ける</b><small>要件定義は docs/spec/ 配下など、「場所」で切るのが原則</small></span></li>
+      <li><span class="box"></span><span class="tx"><b>検証可能な停止条件を書いてから小さく自走させる</b><small>/goal に「test/auth 全 green かつ lint 0」のような形で</small></span></li>
+      <li><span class="box"></span><span class="tx"><b>失敗を見たら、その場で1行足す</b><small>CLAUDE.md か hook へ。ラチェットは今日から回り始める</small></span></li>
+    </ul>
+    <p class="rv" style="font-size:14px;color:var(--mut);margin-top:14px">具体的な設定値・settings.json の全文・フェーズ別制御の詳細は、別紙 <a href="guide.html">「実践ガイド — ハーネスの具体設定」</a> に。</p>
+  </section>
+
+  <!-- ================= END ================= -->
+  <section class="ch" id="end">
+    <div class="chhead rv">
+      <div class="chnum">09</div>
+      <div>
+        <div class="chkick">EPILOGUE</div>
+        <h2>持ち帰るのは4行でいい<span class="en">Takeaways</span></h2>
+      </div>
+    </div>
+    <div class="flip rv">
+      <div class="flipbtns" role="tablist">
+        <button class="on" data-p="before" role="tab">Before — 今</button>
+        <button data-p="after" role="tab">After — 設計後</button>
+      </div>
+      <div class="flippane on" data-p="before">
+        <div class="fitem"><span class="mk">−</span>結果がモデルの機嫌任せで、当たり外れが大きい</div>
+        <div class="fitem"><span class="mk">−</span>同じ失敗を毎回、口頭で直させている</div>
+        <div class="fitem"><span class="mk">−</span>毎ターン人が張り付き、レビューは自己申告</div>
+      </div>
+      <div class="flippane" data-p="after">
+        <div class="fitem"><span class="mk">＋</span>足場が品質を安定させ、モデル更新の恩恵もそのまま乗る</div>
+        <div class="fitem"><span class="mk">＋</span>失敗はルール化され再発しない——足場は失敗の数だけ強くなる</div>
+        <div class="fitem"><span class="mk">＋</span>検証付きで一部を任せ、人はループと基準の設計に回る</div>
+      </div>
+    </div>
+    <div class="prose rv" style="margin-top:36px">
+      <p><b>①</b> 4つの xx は積み上げ——どう聞く → 何を渡す → 周りを作る → 誰が回す。<br>
+      <b>②</b> レバレッジは「良い一文」から「良い環境」へ移動した。いま効くのはハーネス。<br>
+      <b>③</b> 設計なき自走はゴミ量産マシン。予算・Done 条件・人による検証をセットで。<br>
+      <b>④</b> 明日やるのは2つだけ：CLAUDE.md を短く書く、hooks で1つ強制する。</p>
+    </div>
+    <hr class="hr">
+    <div class="links rv" style="margin-top:30px">
+      <p><b>参考</b><br>
+      Anthropic — <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering for AI agents</a> ／ <a href="https://www.anthropic.com/engineering/harness-design-long-running-apps">Harness design for long-running apps</a><br>
+      Claude Code Docs — <a href="https://code.claude.com/docs/en/hooks">Hooks reference</a> ／ <a href="https://code.claude.com/docs/en/costs">Manage costs</a><br>
+      Addy Osmani — <a href="https://addyosmani.com/blog/agent-harness-engineering/">Agent Harness Engineering</a> ／ <a href="https://addyosmani.com/blog/loop-engineering/">Loop Engineering</a><br>
+      関連資料 — <a href="./">入口ページ</a> ／ <a href="guide.html">実践ガイド（別紙）</a></p>
+    </div>
+  </section>
+
+  <p class="tail">— fin —　図はすべて本資料用に作成したオリジナルの概念図です。チェックリストの状態はページを閉じるとリセットされます。</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- scroll progress ---- */
+  var prog=document.getElementById('prog');
+  function onScroll(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+  }
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* ---- reveal on scroll ---- */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+
+  /* ---- rail active state ---- */
+  var ids=['intro','map','l1','l2','l3','l4','shift','risk','action','end'];
+  var links={};
+  document.querySelectorAll('#rail a').forEach(function(a){ links[a.getAttribute('href').slice(1)]=a; });
+  var io2=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        ids.forEach(function(id){ if(links[id]) links[id].classList.remove('on'); });
+        var l=links[e.target.id]; if(l) l.classList.add('on');
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) io2.observe(el); });
+
+  /* ---- ring map hover sync ---- */
+  function hot(k,on){
+    document.querySelectorAll('.ring[data-k="'+k+'"] circle').forEach(function(c){
+      c.style.strokeWidth=on?'5':'2';
+      c.style.filter=on?'drop-shadow(0 0 8px currentColor)':'';
+    });
+    var lg=document.querySelector('.lg[data-k="'+k+'"]');
+    if(lg) lg.classList.toggle('hot',on);
+  }
+  ['l1','l2','l3','l4'].forEach(function(k){
+    [document.querySelector('.ring[data-k="'+k+'"]'),document.querySelector('.lg[data-k="'+k+'"]')].forEach(function(el){
+      if(!el) return;
+      el.addEventListener('mouseenter',function(){hot(k,true);});
+      el.addEventListener('mouseleave',function(){hot(k,false);});
+      el.addEventListener('click',function(){
+        ['l1','l2','l3','l4'].forEach(function(x){hot(x,false);}); hot(k,true);
+      });
+    });
+  });
+
+  /* ---- context rot slider ---- */
+  var rot=document.getElementById('rot');
+  var segs=[document.getElementById('sg1'),document.getElementById('sg2'),document.getElementById('sg3'),document.getElementById('sg4')];
+  var ratio=[0.30,0.25,0.30,0.15];
+  var gfill=document.getElementById('gfill'), gnum=document.getElementById('gnum');
+  var pct=document.getElementById('rotpct'), st=document.getElementById('rotstate'), msg=document.getElementById('rotmsg');
+  function rotUpd(){
+    var v=+rot.value;
+    segs.forEach(function(s,i){ s.style.width=(v*ratio[i])+'%'; });
+    var acc=Math.round(98-0.18*v-0.0038*v*v);
+    gfill.style.width=acc+'%';
+    gnum.textContent=acc+'%';
+    pct.textContent=v;
+    if(v<40){ st.textContent='快適圏'; st.style.color='var(--teal)';
+      msg.innerHTML='余白がある。<b>重要な指示が際立ち</b>、取りこぼしが少ない状態。'; }
+    else if(v<75){ st.textContent='混雑'; st.style.color='var(--amber)';
+      msg.innerHTML='指示が埋もれ始める。<b>履歴の圧縮・不要ツールの排除</b>を考えるライン。'; }
+    else { st.textContent='Context rot'; st.style.color='var(--terra)';
+      msg.innerHTML='拾い漏れ・脱線・忘却が目に見えて増える。<b>「引く」設計</b>が必要。'; }
+  }
+  rot.addEventListener('input',rotUpd); rotUpd();
+
+  /* ---- harness explorer ---- */
+  var HDATA={
+    claude:{t:'CLAUDE.md / システムプロンプト',tag:'方向づけ',
+      d:'毎ターン読み込まれる「憲法」。コマンド・規約・レッドライン・Done 条件を短く書く。長いほど効くのではなく、短いほど1行の重みが増す。',
+      e:'目安は60行以内。増やすのは失敗を見た時だけ、モデルが賢くなったら削る。'},
+    tools:{t:'ツール / MCP',tag:'手足',
+      d:'エージェントの行動範囲を決める。数を増やすほど強くなるわけではない——ツールの説明文も毎ターン、コンテキストと課金を消費する。',
+      e:'10個の的確なツール ＞ 50個の重複ツール。使っていない MCP は外す。'},
+    hooks:{t:'hooks',tag:'強制',
+      d:'CLAUDE.md が「お願い」なら hooks は「強制」。編集のたびに lint・型・テストを自動実行し、危険コマンドは実行前にブロックする。',
+      e:'原則は「成功は無言、失敗は饒舌」。通過時は何も返さず、失敗時だけ理由を返す。'},
+    sandbox:{t:'サンドボックス',tag:'安全な失敗',
+      d:'壊してよい隔離環境。安心して失敗できる場所があるほど、エージェントに試させられる回数が増え、結果として速くなる。',
+      e:'本番・共有リソースには触らせない。worktree での分離もこの思想の延長。'},
+    sub:{t:'サブエージェント',tag:'分業',
+      d:'作る人と確かめる人を分ける。実装エージェントの成果を、仕様に照らしてレビューする別エージェントが採点する。自己採点は必ず甘くなる。',
+      e:'「Done の条件」を先に書いておくと、レビューの基準がぶれない。'},
+    memory:{t:'メモリ / 検索',tag:'記憶',
+      d:'会話の外に「済み・未」を残す外部メモリ。コンテキストは消えるが、md ファイルやチケットは残る。毎回ゼロから始めない仕組み。',
+      e:'ループエンジニアリングの土台にもなる、層をまたぐ部品。'}
+  };
+  var hpT=document.getElementById('hp-title'),hpD=document.getElementById('hp-desc'),
+      hpE=document.getElementById('hp-ex'),hpG=document.getElementById('hp-tag');
+  document.querySelectorAll('.hnode').forEach(function(n){
+    n.addEventListener('click',function(){
+      document.querySelectorAll('.hnode').forEach(function(x){x.classList.remove('on');});
+      n.classList.add('on');
+      var d=HDATA[n.getAttribute('data-k')];
+      hpG.textContent='HARNESS — '+d.tag;
+      hpT.textContent=d.t;
+      hpD.textContent=d.d;
+      hpE.innerHTML='<b>運用メモ：</b>'+d.e;
+    });
+  });
+
+  /* ---- before/after flip ---- */
+  document.querySelectorAll('.flipbtns button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.flipbtns button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      var p=b.getAttribute('data-p');
+      document.querySelectorAll('.flippane').forEach(function(pn){
+        pn.classList.toggle('on',pn.getAttribute('data-p')===p);
+      });
+    });
+  });
+
+  /* ---- checklist ---- */
+  var ckn=document.getElementById('ckn'),ckf=document.getElementById('ckf');
+  var items=document.querySelectorAll('#cklist li');
+  items.forEach(function(li){
+    li.addEventListener('click',function(){
+      li.classList.toggle('done');
+      var d=document.querySelectorAll('#cklist li.done').length;
+      ckn.textContent=d;
+      ckf.style.width=(d/items.length*100)+'%';
+    });
+  });
+})();
+</script>
+</body>
+</html>

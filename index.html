@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="xxエンジニアリング — プロンプト・コンテキスト・ハーネス・ループ。勉強会資料と実践ガイドの入口ページ。">
+<title>xxエンジニアリング — 資料一覧</title>
+<style>
+  :root{
+    --bg:#0e1117; --panel:#171c27; --panel2:#1c2230;
+    --ink:#e8e4da; --sub:#b8bfc9; --mut:#8b93a0; --line:#2a3140;
+    --amber:#e0a458; --teal:#4fd1c5; --terra:#e2673a; --violet:#8b8aeb; --slate:#7f9cc0;
+    --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+    --sans:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.85;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 22px;
+    background-image:radial-gradient(1000px 500px at 75% -10%,#1a2233 0%,transparent 60%)}
+  .box{max-width:680px;width:100%}
+  .ey{font-size:12px;letter-spacing:.42em;color:var(--amber);font-weight:700}
+  h1{font-family:var(--serif);font-size:clamp(34px,7vw,52px);line-height:1.2;margin:16px 0 14px;font-weight:600}
+  h1 .xx{color:var(--amber)}
+  .sub{color:var(--sub);font-size:15.5px}
+  .chips{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
+  .chip{font-size:12px;letter-spacing:.05em;border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:4px 12px}
+  .chip i{font-style:normal;margin-right:6px}
+  .cards{margin-top:44px;display:grid;gap:16px}
+  a.card{display:block;text-decoration:none;border:1px solid var(--line);border-radius:16px;
+    background:var(--panel);padding:26px 30px;transition:all .22s ease;position:relative;overflow:hidden}
+  a.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac)}
+  a.card:hover{background:var(--panel2);border-color:#39445c;transform:translateY(-2px)}
+  a.card .tag{font-size:11px;letter-spacing:.26em;color:var(--ac);font-weight:700}
+  a.card h2{font-family:var(--serif);font-size:23px;color:var(--ink);margin:8px 0 8px;font-weight:600}
+  a.card p{font-size:14px;color:var(--sub)}
+  a.card .go{margin-top:14px;font-size:13px;color:var(--ac);font-weight:700;letter-spacing:.06em}
+  a.card .go::after{content:"→";margin-left:8px;transition:margin .2s}
+  a.card:hover .go::after{margin-left:14px}
+  .c1{--ac:var(--amber)} .c2{--ac:var(--teal)}
+  footer{margin-top:44px;font-size:12.5px;color:var(--mut);letter-spacing:.04em}
+</style>
+</head>
+<body>
+  <main class="box">
+    <div class="ey">STUDY SESSION / LT</div>
+    <h1><span class="xx">xx</span> エンジニアリング</h1>
+    <p class="sub">AIツールを「モデル性能まかせ」で終わらせないための環境設計。<br>
+    4つの “xx” — 何を設計すれば、エージェントは安定して働くのか。</p>
+    <div class="chips">
+      <span class="chip"><i style="color:var(--slate)">●</i>プロンプト</span>
+      <span class="chip"><i style="color:var(--teal)">●</i>コンテキスト</span>
+      <span class="chip"><i style="color:var(--violet)">●</i>ハーネス</span>
+      <span class="chip"><i style="color:var(--terra)">●</i>ループ</span>
+    </div>
+
+    <nav class="cards">
+      <a class="card c1" href="slides.html">
+        <span class="tag">MAIN — INTERACTIVE</span>
+        <h2>本編 — 設計対象は、外へ。</h2>
+        <p>プロンプト → コンテキスト → ハーネス → ループを「設計対象が外へ広がる物語」として読む本編。同心円マップ、context rot スライダー、ハーネス探索図など、触って理解できるインタラクティブ版。</p>
+        <span class="go">READ</span>
+      </a>
+      <a class="card c2" href="guide.html">
+        <span class="tag">APPENDIX — HANDS-ON</span>
+        <h2>実践ガイド — ハーネスの具体設定</h2>
+        <p>CLAUDE.md に何を書くか、hooks（settings.json）の実例、Skills の作り方、フェーズ別のコンテキスト制御、ループとコストの上限。手を動かす人のための別紙。</p>
+        <span class="go">READ</span>
+      </a>
+    </nav>
+
+    <footer>図・コードはすべて本資料用に作成したものです。</footer>
+  </main>
+</body>
+</html>
