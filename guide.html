@@ -7,98 +7,174 @@
 <title>実践ガイド — ハーネスの具体設定</title>
 <style>
   :root{
-    --bg:#eeeae0; --paper:#ffffff; --panel:#faf8f3;
-    --ink:#1b2430; --sub:#48525f; --mut:#8a8f99; --line:#e2ddd0;
-    --teal:#0f766e; --terra:#bd4b1e; --indigo:#3b3a86; --slate:#3d5a80;
+    --bg:#0e1117; --bg2:#12161f; --panel:#171c27; --panel2:#1c2230;
+    --ink:#e8e4da; --sub:#b8bfc9; --mut:#8b93a0; --line:#2a3140;
+    --amber:#e0a458; --teal:#4fd1c5; --terra:#e2673a; --violet:#8b8aeb; --slate:#7f9cc0;
+    --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+    --sans:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
-    color:var(--ink);line-height:1.75;background:var(--bg)}
-  .serif{font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif}
-  .wrap{max-width:860px;margin:0 auto;padding:36px 22px 110px}
-  header.top{background:linear-gradient(180deg,#1b2430,#243447);color:#f4f1ea;border-radius:10px;padding:40px 44px;text-align:center}
-  header.top .ey{letter-spacing:.3em;font-size:12px;color:#8fb7c9;font-weight:700}
-  header.top h1{font-size:34px;margin:12px 0 6px}
-  header.top p{color:#cfd6de;font-size:15px}
-  header.top .back{margin-top:14px;font-size:13px}
-  header.top .back a{color:#a9cbd8;font-weight:600}
-  section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:32px 40px;margin:18px 0;
-    box-shadow:0 2px 10px rgba(40,35,20,.05);scroll-margin-top:24px}
-  section:target{border-color:var(--slate);box-shadow:0 2px 14px rgba(61,90,128,.18)}
-  .kick{display:inline-block;font-weight:700;font-size:12px;letter-spacing:.12em;color:var(--terra);text-transform:uppercase;margin-bottom:8px}
-  h2{font-size:25px;margin-bottom:8px}
-  h3{font-size:17px;margin:20px 0 4px;color:var(--indigo)}
-  p{font-size:15.5px;color:var(--sub)}
-  .lead{font-size:16px;color:var(--sub)}
-  ul{list-style:none;margin-top:10px}
-  li{font-size:15px;color:var(--sub);padding:6px 0 6px 20px;position:relative;line-height:1.65}
-  li::before{content:"";position:absolute;left:2px;top:14px;width:6px;height:6px;background:var(--teal);border-radius:1px}
-  li b{color:var(--ink)}
-  pre{background:#1c2530;color:#e7e3d6;border-radius:8px;padding:16px 18px;overflow:auto;
-    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.65;margin-top:10px}
-  pre .c{color:#8c96a3}pre .s{color:#c7e59d}pre .k{color:#7fd6c6}pre .n{color:#e0a06a}
-  .tblwrap{overflow-x:auto;margin-top:12px}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.9;
+    background-image:radial-gradient(1200px 600px at 80% -10%,#1a2233 0%,transparent 60%);}
+  ::selection{background:#e0a45833}
+
+  /* ---- progress bar ---- */
+  #prog{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--slate),var(--teal),var(--violet),var(--terra));z-index:99}
+
+  /* ---- side rail ---- */
+  nav#rail{position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:4px}
+  nav#rail a{display:flex;align-items:center;gap:10px;text-decoration:none;padding:5px 6px;border-radius:6px}
+  nav#rail .dot{width:8px;height:8px;border-radius:50%;background:var(--line);flex:none;transition:all .25s}
+  nav#rail .lb{font-size:11px;color:var(--mut);letter-spacing:.08em;opacity:0;transform:translateX(-6px);transition:all .25s;white-space:nowrap}
+  nav#rail a:hover .lb{opacity:1;transform:none}
+  nav#rail a.on .dot{background:var(--amber);box-shadow:0 0 10px #e0a45866}
+  nav#rail a.on .lb{opacity:1;transform:none;color:var(--amber)}
+  @media(max-width:1160px){nav#rail{display:none}}
+
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px 140px}
+
+  /* ---- hero (compact) ---- */
+  .hero{padding:110px 0 30px}
+  .hero .ey{font-size:12px;letter-spacing:.42em;color:var(--amber);font-weight:700;margin-bottom:22px}
+  .hero h1{font-family:var(--serif);font-size:clamp(32px,6vw,54px);line-height:1.25;letter-spacing:.02em;font-weight:600}
+  .hero .sub{font-family:var(--serif);font-size:clamp(16px,2.6vw,20px);color:var(--sub);margin-top:22px;line-height:1.9}
+  .hero .back{margin-top:26px;font-size:13.5px;color:var(--mut)}
+  .hero .back a{color:var(--slate);font-weight:600}
+
+  /* ---- toc ---- */
+  .toc{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:24px 28px;margin-top:36px}
+  .toc .tag{font-size:11px;letter-spacing:.26em;color:var(--amber);font-weight:700}
+  .toc ol{list-style:none;margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:2px 26px}
+  @media(max-width:680px){.toc ol{grid-template-columns:1fr}}
+  .toc li{padding:6px 0}
+  .toc a{color:var(--sub);text-decoration:none;font-size:14.5px;display:flex;gap:12px;align-items:baseline}
+  .toc a:hover{color:var(--ink)}
+  .toc a .no{font-family:var(--mono);font-size:12px;color:var(--amber);flex:none}
+  .toc .warn{margin-top:16px;font-size:12.5px;color:var(--mut);border-top:1px dashed var(--line);padding-top:14px}
+
+  /* ---- section scaffolding ---- */
+  section.ch{padding:96px 0 10px;scroll-margin-top:10px;position:relative}
+  section.ch:target .chnum{-webkit-text-stroke-color:var(--amber)}
+  .chhead{display:flex;align-items:baseline;gap:22px;margin-bottom:14px}
+  .chnum{font-family:var(--serif);font-size:clamp(64px,10vw,104px);line-height:1;color:transparent;
+    -webkit-text-stroke:1px #454f63;font-weight:600;flex:none;user-select:none;transition:all .4s}
+  .chkick{font-size:12px;letter-spacing:.3em;color:var(--amber);font-weight:700;margin-bottom:10px}
+  h2{font-family:var(--serif);font-size:clamp(25px,4.2vw,34px);line-height:1.4;font-weight:600;letter-spacing:.01em}
+  h2 .en{display:block;font-family:var(--sans);font-size:12.5px;letter-spacing:.24em;color:var(--mut);font-weight:600;margin-top:10px;text-transform:uppercase}
+  h3{font-size:16px;margin:30px 0 8px;color:var(--violet);font-weight:700}
+  .prose{margin-top:22px}
+  .prose p,p.lead{font-size:16px;color:var(--sub);margin:0 0 1.2em}
+  p b,li b{color:var(--ink);font-weight:600}
+
+  ul.pts{list-style:none;margin:10px 0 6px}
+  ul.pts li{padding:7px 0 7px 26px;position:relative;font-size:15px;color:var(--sub);line-height:1.8}
+  ul.pts li::before{content:"";position:absolute;left:2px;top:18px;width:8px;height:2px;background:var(--amber)}
+
+  pre{background:#0a0d13;border:1px solid var(--line);color:#d7dce4;border-radius:12px;padding:18px 20px;overflow:auto;
+    font-family:var(--mono);font-size:12.5px;line-height:1.7;margin:14px 0}
+  pre .c{color:#5f6b7d}pre .s{color:#a8d58a}pre .k{color:#4fd1c5}pre .n{color:#e0a458}
+  code.inline{background:#1d2432;border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-family:var(--mono);font-size:12.5px;color:var(--teal)}
+
+  .tblwrap{overflow-x:auto;margin:14px 0}
   table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
-  th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
-  th{background:var(--panel);color:var(--ink);font-size:13px}
-  td{color:var(--sub)}
-  td code,p code,li code{background:#f0ece2;border-radius:4px;padding:1px 6px;font-family:"SF Mono",Menlo,monospace;font-size:12.5px;color:#7a3b1c}
-  .note{margin-top:14px;padding:13px 16px;border-radius:8px;background:var(--panel);border:1px solid var(--line);font-size:14px;color:var(--sub)}
-  .note.warn{background:#fbeee7;border-color:#e7c3ad}
+  th,td{border:1px solid var(--line);padding:10px 14px;text-align:left;vertical-align:top;color:var(--sub)}
+  th{background:var(--panel);color:var(--ink);font-size:12.5px;letter-spacing:.06em}
+
+  .note{border:1px solid var(--line);border-left:3px solid var(--terra);background:var(--panel);
+    border-radius:0 12px 12px 0;padding:16px 20px;margin:22px 0;font-size:14.5px;color:var(--sub)}
   .note b{color:var(--terra)}
-  .toc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 26px;margin:18px 0}
-  .toc a{color:var(--slate);text-decoration:none;font-weight:600;font-size:15px}
-  .toc a:hover{text-decoration:underline}
-  .toc li::before{background:var(--slate)}
-  .up{display:block;text-align:right;margin-top:18px;font-size:12.5px}
+  .note.tip{border-left-color:var(--teal)}
+  .note.tip b{color:var(--teal)}
+
+  .up{display:block;text-align:right;margin-top:26px;font-size:12px;letter-spacing:.1em}
   .up a{color:var(--mut);text-decoration:none}
-  .up a:hover{color:var(--slate)}
-  .tail{text-align:center;color:var(--mut);font-size:13px;margin-top:26px}
-  .links a{color:var(--slate);font-weight:600}
-  @media(max-width:640px){section{padding:24px 22px}header.top h1{font-size:26px}}
-  @media print{body{background:#fff}section{box-shadow:none;break-inside:avoid}.up{display:none}header.top{background:#1b2430}}
+  .up a:hover{color:var(--amber)}
+
+  .links{font-size:14.5px;line-height:2.1;color:var(--sub)}
+  a{color:var(--slate)}
+  .hr{border:none;border-top:1px solid var(--line);margin:70px 0 0}
+  .tail{text-align:center;color:var(--mut);font-size:12.5px;margin-top:90px;letter-spacing:.06em}
+  .tail a{color:var(--slate)}
+
+  /* ---- reveal ---- */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+  .rv.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+  @media print{
+    body{background:#fff;color:#111}
+    #prog,nav#rail,.up{display:none}
+    .rv{opacity:1;transform:none}
+    section.ch{break-inside:avoid;padding:40px 0 0}
+  }
 </style>
 </head>
 <body>
+<div id="prog"></div>
+
+<nav id="rail" aria-label="ページ内ナビゲーション">
+  <a href="#top"><span class="dot"></span><span class="lb">トップ / 目次</span></a>
+  <a href="#claude"><span class="dot"></span><span class="lb">1. CLAUDE.md</span></a>
+  <a href="#hooks"><span class="dot"></span><span class="lb">2. hooks</span></a>
+  <a href="#skills"><span class="dot"></span><span class="lb">3. Skills</span></a>
+  <a href="#phase"><span class="dot"></span><span class="lb">4. フェーズ別制御</span></a>
+  <a href="#loop"><span class="dot"></span><span class="lb">5. ループの上限</span></a>
+  <a href="#token"><span class="dot"></span><span class="lb">6. コストの上限</span></a>
+  <a href="#start"><span class="dot"></span><span class="lb">7. 最初の30分</span></a>
+</nav>
+
 <div class="wrap">
-  <header class="top" id="top">
-    <div class="ey">別紙 / HANDS-ON</div>
-    <h1 class="serif">実践ガイド — ハーネスの具体設定</h1>
-    <p>CLAUDE.md ／ hooks ／ ループ・トークン上限の「どこに何を書くか」</p>
-    <p class="back">本編：<a href="slides.html">xxエンジニアリング（勉強会資料）↗</a></p>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="top">
+    <div class="ey">APPENDIX / HANDS-ON</div>
+    <h1>実践ガイド<br>— ハーネスの具体設定</h1>
+    <p class="sub">CLAUDE.md ／ hooks ／ Skills ／ ループ・トークン上限。<br>「どこに、何を書くか」だけを集めた、手を動かす人のための別紙。</p>
+    <p class="back">本編：<a href="slides.html">xxエンジニアリング — 設計対象は、外へ。 ↗</a></p>
+
+    <nav class="toc rv">
+      <span class="tag">CONTENTS</span>
+      <ol>
+        <li><a href="#claude"><span class="no">01</span>CLAUDE.md に何を書くか</a></li>
+        <li><a href="#hooks"><span class="no">02</span>hooks の使い方（settings.json）</a></li>
+        <li><a href="#skills"><span class="no">03</span>Skills（SKILL.md）の設定例</a></li>
+        <li><a href="#phase"><span class="no">04</span>フェーズ別のコンテキスト制御</a></li>
+        <li><a href="#loop"><span class="no">05</span>ループの上限・停止条件</a></li>
+        <li><a href="#token"><span class="no">06</span>トークン / コストの上限</a></li>
+        <li><a href="#start"><span class="no">07</span>最初の30分でやること</a></li>
+      </ol>
+      <p class="warn">※ フラグ名・スキーマは更新され得ます。実行前に公式ドキュメント（末尾リンク）で最新を確認してください。</p>
+    </nav>
   </header>
 
-  <section class="toc">
-    <span class="kick">目次</span>
-    <ul>
-      <li><a href="#claude">1. CLAUDE.md に何を書くか</a></li>
-      <li><a href="#hooks">2. hooks の使い方（settings.json）</a></li>
-      <li><a href="#skills">3. Skills（SKILL.md）の設定例</a></li>
-      <li><a href="#phase">4. フェーズ別のコンテキスト制御（要件定義 / 実装）</a></li>
-      <li><a href="#loop">5. ループの上限・停止条件</a></li>
-      <li><a href="#token">6. トークン / コストの上限はどこで設定するか</a></li>
-      <li><a href="#start">7. 最初の30分でやること</a></li>
-    </ul>
-    <div class="note">※ フラグ名・スキーマは更新され得ます。実行前に公式ドキュメント（末尾リンク）で最新を確認してください。</div>
-  </section>
+  <!-- ================= 1 CLAUDE.md ================= -->
+  <section class="ch" id="claude">
+    <div class="chhead rv">
+      <div class="chnum">01</div>
+      <div>
+        <div class="chkick">SECTION 1 — MEMORY FILE</div>
+        <h2>CLAUDE.md に何を書くか<span class="en">The constitution, read every turn</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>プロジェクト直下に置くと<b>毎ターン system prompt に載る</b>メモリファイル。原則は「短く・理由付きで・過去の失敗だけをルール化」。目安は60行以内。</p>
+    </div>
 
-  <!-- 1 CLAUDE.md -->
-  <section id="claude">
-    <span class="kick">1</span>
-    <h2 class="serif">CLAUDE.md に何を書くか</h2>
-    <p class="lead">プロジェクト直下に置くと<b>毎ターン system prompt に載る</b>メモリファイル。原則は「短く・理由付きで・過去の失敗だけをルール化」。目安は60行以内。</p>
-
+    <div class="rv">
     <h3>置き場所と読み込み</h3>
-    <ul>
-      <li><code>./CLAUDE.md</code> … リポジトリ直下。チーム共有（コミット対象）</li>
-      <li><code>./CLAUDE.local.md</code> … 個人用（gitignore 推奨）</li>
-      <li><code>~/.claude/CLAUDE.md</code> … 全プロジェクト共通の個人設定</li>
+    <ul class="pts">
+      <li><code class="inline">./CLAUDE.md</code> … リポジトリ直下。チーム共有（コミット対象）</li>
+      <li><code class="inline">./CLAUDE.local.md</code> … 個人用（gitignore 推奨）</li>
+      <li><code class="inline">~/.claude/CLAUDE.md</code> … 全プロジェクト共通の個人設定</li>
       <li>サブディレクトリに置けば、そのフォルダ作業時のみ追加読み込み（→ 4章で活用）</li>
     </ul>
+    </div>
 
+    <div class="rv">
     <h3>書く中身（WHAT / WHY / HOW ＋ レッドライン ＋ Done）</h3>
-    <p style="font-size:14px;color:var(--mut);margin-top:4px">「何を・なぜ・どうやって」＋「触ってはいけない」＋「完了条件」が揃うと、エージェントが迷わず・暴走しにくい。以下は Laravel プロジェクトでの抜粋。</p>
+    <p style="font-size:14px;color:var(--mut)">「何を・なぜ・どうやって」＋「触ってはいけない」＋「完了条件」が揃うと、エージェントが迷わず・暴走しにくい。以下は Laravel プロジェクトでの抜粋。</p>
     <pre><span class="c"># sunshine-server</span>
 
 <span class="c">## WHAT — 技術スタック / 構造</span>
@@ -138,35 +214,46 @@
 <span class="c">## Done の条件</span>
 - 対象テストが green ＋ make format 済み
 - API を変更したら make openapi を実行し差分を確認</pre>
-    <div class="note"><b>コツ：</b>ルールは「増やすのは失敗を見た時だけ／モデルが賢くなったら削る」。全部盛りにすると1行ごとの重みが下がり、かえって守られなくなる。<b>詳細なアーキ解説など“辞書的”な内容は Skills / references に逃がし</b>、CLAUDE.md は毎ターン効く要点に絞ると軽い。</div>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    </div>
+    <div class="note tip rv"><b>コツ：</b>ルールは「増やすのは失敗を見た時だけ／モデルが賢くなったら削る」。全部盛りにすると1行ごとの重みが下がり、かえって守られなくなる。<b style="color:var(--ink)">詳細なアーキ解説など“辞書的”な内容は Skills / references に逃がし</b>、CLAUDE.md は毎ターン効く要点に絞ると軽い。</div>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <!-- 2 hooks -->
-  <section id="hooks">
-    <span class="kick">2</span>
-    <h2 class="serif">hooks の使い方</h2>
-    <p class="lead">CLAUDE.md が「お願い」なら、hooks は「<b>強制</b>」。エージェントのライフサイクルの特定点でシェル等を実行し、通す / 止めるを決める。<code>.claude/settings.json</code> に書けばチーム全員に効く。</p>
+  <!-- ================= 2 hooks ================= -->
+  <section class="ch" id="hooks">
+    <div class="chhead rv">
+      <div class="chnum">02</div>
+      <div>
+        <div class="chkick">SECTION 2 — ENFORCEMENT</div>
+        <h2>hooks の使い方<span class="en">From asking to enforcing</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>CLAUDE.md が「お願い」なら、hooks は「<b>強制</b>」。エージェントのライフサイクルの特定点でシェル等を実行し、通す / 止めるを決める。<code class="inline">.claude/settings.json</code> に書けばチーム全員に効く。</p>
+    </div>
 
+    <div class="rv">
     <h3>主なイベント</h3>
     <div class="tblwrap">
     <table>
       <tr><th>イベント</th><th>タイミング</th><th>典型用途</th></tr>
-      <tr><td><code>PreToolUse</code></td><td>ツール実行の直前</td><td>危険コマンドをブロック、承認ゲート</td></tr>
-      <tr><td><code>PostToolUse</code></td><td>ツール実行の直後</td><td>編集後に lint / 型 / test、自動整形</td></tr>
-      <tr><td><code>UserPromptSubmit</code></td><td>入力送信時</td><td>入力の検査・付帯情報の注入</td></tr>
-      <tr><td><code>Notification</code></td><td>通知発生時（承認待ち等）</td><td>デスクトップ通知・音</td></tr>
-      <tr><td><code>Stop</code></td><td>応答終了時</td><td>完了チェック・通知</td></tr>
+      <tr><td><code class="inline">PreToolUse</code></td><td>ツール実行の直前</td><td>危険コマンドをブロック、承認ゲート</td></tr>
+      <tr><td><code class="inline">PostToolUse</code></td><td>ツール実行の直後</td><td>編集後に lint / 型 / test、自動整形</td></tr>
+      <tr><td><code class="inline">UserPromptSubmit</code></td><td>入力送信時</td><td>入力の検査・付帯情報の注入</td></tr>
+      <tr><td><code class="inline">Notification</code></td><td>通知発生時（承認待ち等）</td><td>デスクトップ通知・音</td></tr>
+      <tr><td><code class="inline">Stop</code></td><td>応答終了時</td><td>完了チェック・通知</td></tr>
     </table>
     </div>
+    </div>
 
-    <h3>設定例（.claude/settings.json）― 実プロジェクト版（Laravel + Docker）</h3>
-    <p style="font-size:14px;color:var(--mut);margin-top:4px">動作確認済みの構成。5つの hook を入れている。<b>settings.json は標準 JSON でコメント不可</b>なので、意味は下の箇条書きで補足する。</p>
-    <ul>
-      <li><b>PreToolUse / Bash（危険コマンド）：</b><code>rm -rf</code> / <code>dd</code> / <code>mkfs</code> / <code>DROP TABLE</code> / <code>chmod -R 777</code> などを検出し、実行前にブロック</li>
-      <li><b>PreToolUse / Bash（コミット前テスト）：</b><code>git commit</code> を含むコマンドの前に <code>php artisan test</code> を実行し、失敗したらコミットをブロック</li>
-      <li><b>PreToolUse / 編集（保護ブランチ）：</b><code>master</code> / <code>develop</code> への直接編集を禁止（feature ブランチを強制）</li>
-      <li><b>PostToolUse / 編集（自動整形）：</b><code>.php</code> を編集したら php-cs-fixer を自動実行</li>
+    <div class="rv">
+    <h3>設定例（.claude/settings.json）— 実プロジェクト版（Laravel + Docker）</h3>
+    <p style="font-size:14px;color:var(--mut)">動作確認済みの構成。5つの hook を入れている。<b>settings.json は標準 JSON でコメント不可</b>なので、意味は下の箇条書きで補足する。</p>
+    <ul class="pts">
+      <li><b>PreToolUse / Bash（危険コマンド）：</b><code class="inline">rm -rf</code> / <code class="inline">dd</code> / <code class="inline">mkfs</code> / <code class="inline">DROP TABLE</code> / <code class="inline">chmod -R 777</code> などを検出し、実行前にブロック</li>
+      <li><b>PreToolUse / Bash（コミット前テスト）：</b><code class="inline">git commit</code> を含むコマンドの前に <code class="inline">php artisan test</code> を実行し、失敗したらコミットをブロック</li>
+      <li><b>PreToolUse / 編集（保護ブランチ）：</b><code class="inline">master</code> / <code class="inline">develop</code> への直接編集を禁止（feature ブランチを強制）</li>
+      <li><b>PostToolUse / 編集（自動整形）：</b><code class="inline">.php</code> を編集したら php-cs-fixer を自動実行</li>
       <li><b>Notification / Stop：</b>承認待ち・作業完了を macOS のデスクトップ通知（音付き）で知らせる</li>
     </ul>
     <pre>{
@@ -233,29 +320,42 @@
     ]
   }
 }</pre>
-    <div class="note"><b>設計原則：</b>「成功は無言、失敗は饒舌」。通過時は何も返さず、失敗時だけ <code>decision: block</code> と reason を返すと、フィードバックがほぼ無料で、直すべき時だけ効く。hook は stdin に JSON（<code>tool_input</code> 等）を受け取る。</div>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    </div>
+    <div class="note rv"><b>設計原則：</b>「成功は無言、失敗は饒舌」。通過時は何も返さず、失敗時だけ <code class="inline">decision: block</code> と reason を返すと、フィードバックがほぼ無料で、直すべき時だけ効く。hook は stdin に JSON（<code class="inline">tool_input</code> 等）を受け取る。</div>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <!-- 3 skills -->
-  <section id="skills">
-    <span class="kick">3</span>
-    <h2 class="serif">Skills（SKILL.md）の設定例</h2>
-    <p class="lead">再利用する手順・知識を <code>SKILL.md</code> にまとめ、<b>必要な時だけ context に読み込ませる</b>仕組み。「同じ説明を毎回書く」をやめられる。</p>
+  <!-- ================= 3 skills ================= -->
+  <section class="ch" id="skills">
+    <div class="chhead rv">
+      <div class="chnum">03</div>
+      <div>
+        <div class="chkick">SECTION 3 — REUSABLE KNOWLEDGE</div>
+        <h2>Skills（SKILL.md）の設定例<span class="en">Progressive disclosure</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>再利用する手順・知識を <code class="inline">SKILL.md</code> にまとめ、<b>必要な時だけ context に読み込ませる</b>仕組み。「同じ説明を毎回書く」をやめられる。</p>
+    </div>
 
+    <div class="rv">
     <h3>置き場所</h3>
-    <ul>
-      <li><code>.claude/skills/&lt;name&gt;/SKILL.md</code> … プロジェクト共有（git でチーム配布）</li>
-      <li><code>~/.claude/skills/&lt;name&gt;/SKILL.md</code> … 個人・全プロジェクト共通</li>
+    <ul class="pts">
+      <li><code class="inline">.claude/skills/&lt;name&gt;/SKILL.md</code> … プロジェクト共有（git でチーム配布）</li>
+      <li><code class="inline">~/.claude/skills/&lt;name&gt;/SKILL.md</code> … 個人・全プロジェクト共通</li>
     </ul>
+    </div>
 
+    <div class="rv">
     <h3>フォルダ構成</h3>
     <pre>.claude/skills/pr-review/
   <span class="n">SKILL.md</span>        <span class="c"># 必須：frontmatter(name/description)＋手順</span>
   scripts/        <span class="c"># 任意：決定的な処理スクリプト</span>
   references/     <span class="c"># 任意：必要な時だけ読むドキュメント</span>
   assets/         <span class="c"># 任意：出力に使うテンプレ・アイコン等</span></pre>
+    </div>
 
+    <div class="rv">
     <h3>SKILL.md の中身（例：PRレビュー用）</h3>
     <pre><span class="c">---</span>
 <span class="s">name</span>: pr-review
@@ -273,51 +373,68 @@
 
 <span class="c">## 詳細な観点</span>
 - references/security-checklist.md を参照</pre>
+    </div>
 
-    <div class="note"><b>起動の肝は description：</b>「いつ使うか」を具体的に書くほど自動起動の精度が上がる（賢い説明より“退屈で具体的”が勝つ）。<code>name</code> はフォルダ名と一致必須。本体は短くし、詳細は <code>references/</code> に逃がすと、必要な時だけ context に載る（＝ progressive disclosure）。複数スキルや MCP をまとめて配布したい時は <b>plugin</b> にパッケージする。</div>
+    <div class="note tip rv"><b>起動の肝は description：</b>「いつ使うか」を具体的に書くほど自動起動の精度が上がる（賢い説明より“退屈で具体的”が勝つ）。<code class="inline">name</code> はフォルダ名と一致必須。本体は短くし、詳細は <code class="inline">references/</code> に逃がすと、必要な時だけ context に載る（＝ progressive disclosure）。複数スキルや MCP をまとめて配布したい時は <b style="color:var(--ink)">plugin</b> にパッケージする。</div>
 
-    <div class="note warn"><b>Skills はどの層？　→ 実は「コンテキスト」でも「ハーネス」でもある。</b><br>
-    ・<b>コンテキスト面：</b>「何を・いつ渡すか」を制御する仕掛け。必要な時だけ知識を context に載せる progressive disclosure は、コンテキスト設計そのもの。<br>
-    ・<b>ハーネス面：</b>SKILL.md・scripts・plugin はモデルを包む足場の一部。再利用可能な“能力”として agent に組み込む＝ハーネスの構成要素。<br>
-    ・さらに<b>ループ面：</b>ループの5部品の1つでもある。<br>
+    <div class="note rv"><b>Skills はどの層？　→ 実は「コンテキスト」でも「ハーネス」でもある。</b><br>
+    ・<b style="color:var(--ink)">コンテキスト面：</b>「何を・いつ渡すか」を制御する仕掛け。必要な時だけ知識を context に載せる progressive disclosure は、コンテキスト設計そのもの。<br>
+    ・<b style="color:var(--ink)">ハーネス面：</b>SKILL.md・scripts・plugin はモデルを包む足場の一部。再利用可能な“能力”として agent に組み込む＝ハーネスの構成要素。<br>
+    ・さらに<b style="color:var(--ink)">ループ面：</b>ループの5部品の1つでもある。<br>
     → Skills は層をまたぐ「橋渡し」の存在、と捉えると位置づけがすっきりする。</div>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <!-- 4 phase -->
-  <section id="phase">
-    <span class="kick">4</span>
-    <h2 class="serif">フェーズ別のコンテキスト制御</h2>
-    <p class="lead">実装だけでなく要件定義〜設計でも使うなら、「毎ターン載る情報」をフェーズで出し分けたい。原則は<b>内容を切り替えるのではなく「場所（ディレクトリ）」か「セッション」で切る</b>こと。</p>
+  <!-- ================= 4 phase ================= -->
+  <section class="ch" id="phase">
+    <div class="chhead rv">
+      <div class="chnum">04</div>
+      <div>
+        <div class="chkick">SECTION 4 — PHASE CONTROL</div>
+        <h2>フェーズ別のコンテキスト制御<span class="en">Requirements vs implementation</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>実装だけでなく要件定義〜設計でも使うなら、「毎ターン載る情報」をフェーズで出し分けたい。原則は<b>内容を切り替えるのではなく「場所（ディレクトリ）」か「セッション」で切る</b>こと。</p>
+    </div>
 
+    <div class="rv">
     <h3>何が“毎ターン確実に”載るか</h3>
-    <ul>
-      <li>確実に載るのは、セッションの作業ディレクトリ(cwd)から<b>上へ辿って見つかる CLAUDE.md</b>（<code>/compact</code> 後も再読込される）</li>
+    <ul class="pts">
+      <li>確実に載るのは、セッションの作業ディレクトリ(cwd)から<b>上へ辿って見つかる CLAUDE.md</b>（<code class="inline">/compact</code> 後も再読込される）</li>
       <li>サブディレクトリの CLAUDE.md は<b>起動時には載らない</b>。そのフォルダのファイルを読んだ時にロードされる（＝場所に紐づく）</li>
-      <li><code>@import</code> は常時インライン展開（条件分岐にならず、トークンも減らない）。今ロード中の確認は <code>/memory</code></li>
+      <li><code class="inline">@import</code> は常時インライン展開（条件分岐にならず、トークンも減らない）。今ロード中の確認は <code class="inline">/memory</code></li>
     </ul>
+    </div>
 
+    <div class="rv">
     <h3>方法1 — ディレクトリ単位で CLAUDE.md を分割</h3>
     <pre><span class="c">CLAUDE.md            # 共通の普遍情報だけ薄く（WHY / 地図 / レッドライン）</span>
 <span class="c">app/CLAUDE.md        # 実装フェーズの規約（アーキ・エラー処理・命名）</span>
 <span class="c">docs/spec/CLAUDE.md  # 要件定義フェーズ専用</span></pre>
-    <ul>
-      <li>実装の重い規約をルートから外し、<code>app/</code> 配下でだけ載るようにする</li>
-      <li>要件は <code>docs/spec/</code> の成果物を触りながら進めれば、要件用 CLAUDE.md が自然に載る</li>
+    <ul class="pts">
+      <li>実装の重い規約をルートから外し、<code class="inline">app/</code> 配下でだけ載るようにする</li>
+      <li>要件は <code class="inline">docs/spec/</code> の成果物を触りながら進めれば、要件用 CLAUDE.md が自然に載る</li>
     </ul>
+    </div>
 
+    <div class="rv">
     <h3>方法2 — フェーズごとにセッションを分ける（最も確実）</h3>
-    <ul>
-      <li>要件フェーズは <code>docs/spec/</code> を cwd にして起動 → その CLAUDE.md がトップ＝<b>毎ターン確実に載る</b></li>
+    <ul class="pts">
+      <li>要件フェーズは <code class="inline">docs/spec/</code> を cwd にして起動 → その CLAUDE.md がトップ＝<b>毎ターン確実に載る</b></li>
       <li>実装コンテキストと混ざらない（実装時に要件の細部が載らない・逆も同様）</li>
     </ul>
+    </div>
 
+    <div class="rv">
     <h3>方法3 — 「やり方」は Skill / カスタムコマンドへ</h3>
-    <ul>
+    <ul class="pts">
       <li>ユーザーストーリーの型・受入基準・DB設計チェックリスト・ヒアリング観点などの<b>方法論は実装の毎ターンには不要</b></li>
-      <li><code>requirements</code> スキル（自動起動）か、<code>.claude/commands/requirements.md</code>（<code>/requirements</code>、<code>$ARGUMENTS</code> で対象機能を渡す）でフェーズの頭に注入</li>
+      <li><code class="inline">requirements</code> スキル（自動起動）か、<code class="inline">.claude/commands/requirements.md</code>（<code class="inline">/requirements</code>、<code class="inline">$ARGUMENTS</code> で対象機能を渡す）でフェーズの頭に注入</li>
     </ul>
+    </div>
 
+    <div class="rv">
     <h3>要件フェーズ用 CLAUDE.md の例（docs/spec/CLAUDE.md）</h3>
     <pre><span class="c"># 要件定義フェーズ（このフォルダ作業時のみ）</span>
 
@@ -334,41 +451,60 @@
 <span class="c">## DB設計の規約</span>
 - テーブル名は複数形スネークケース / 論理削除は deleted_at
 - created_at・updated_at を必ず持つ / 金額は整数（最小単位）で保持</pre>
-    <div class="note warn"><b>効かせどころ：</b>「この段階では実装しない」をレッドラインで明記しておくと、要件を詰めている途中でエージェントが勝手にコードを書き始める事故を防げる。ルート CLAUDE.md は薄く保つほど、フェーズ別ファイルの1行が効く。</div>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    </div>
+    <div class="note rv"><b>効かせどころ：</b>「この段階では実装しない」をレッドラインで明記しておくと、要件を詰めている途中でエージェントが勝手にコードを書き始める事故を防げる。ルート CLAUDE.md は薄く保つほど、フェーズ別ファイルの1行が効く。</div>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <!-- 5 loop -->
-  <section id="loop">
-    <span class="kick">5</span>
-    <h2 class="serif">ループの上限・停止条件</h2>
-    <p class="lead">自走させる時は「いつ止まるか」を必ず先に決める。止まらない設計は事故のもと。</p>
+  <!-- ================= 5 loop ================= -->
+  <section class="ch" id="loop">
+    <div class="chhead rv">
+      <div class="chnum">05</div>
+      <div>
+        <div class="chkick">SECTION 5 — STOP CONDITIONS</div>
+        <h2>ループの上限・停止条件<span class="en">Decide when it stops, first</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>自走させる時は「いつ止まるか」を必ず先に決める。止まらない設計は事故のもと。</p>
+    </div>
+    <div class="rv">
     <h3>停止条件を書く（検証可能な形で）</h3>
-    <ul>
-      <li><code>/goal</code>：<b>検証可能な完了条件が真になるまで</b>継続。毎ターン別の小モデルが達成を判定（作った本人に採点させない）。例：「<code>test/auth</code> が全 green かつ lint 0」</li>
-      <li><code>/loop</code>：一定間隔で再実行（cron 的）。無限に回さないよう回数・時刻の枠を決める</li>
-      <li>Agent SDK で組む場合：<code>maxTurns</code> 等でターン上限を設定し、暴走を物理的に止める</li>
+    <ul class="pts">
+      <li><code class="inline">/goal</code>：<b>検証可能な完了条件が真になるまで</b>継続。毎ターン別の小モデルが達成を判定（作った本人に採点させない）。例：「<code class="inline">test/auth</code> が全 green かつ lint 0」</li>
+      <li><code class="inline">/loop</code>：一定間隔で再実行（cron 的）。無限に回さないよう回数・時刻の枠を決める</li>
+      <li>Agent SDK で組む場合：<code class="inline">maxTurns</code> 等でターン上限を設定し、暴走を物理的に止める</li>
     </ul>
+    </div>
+    <div class="rv">
     <h3>並列時の事故防止</h3>
-    <ul>
-      <li><code>git worktree</code> / <code>--worktree</code> で各エージェントを別チェックアウトに隔離（ファイル衝突の回避）</li>
+    <ul class="pts">
+      <li><code class="inline">git worktree</code> / <code class="inline">--worktree</code> で各エージェントを別チェックアウトに隔離（ファイル衝突の回避）</li>
       <li>並列数の上限は「自分がレビューしきれる数」に合わせる（レビュー帯域がボトルネック）</li>
     </ul>
-    <div class="note warn"><b>鉄則：</b>停止条件・最大ターン・最大時間・並列数の4つは、走らせる前に必ず決める。</div>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    </div>
+    <div class="note rv"><b>鉄則：</b>停止条件・最大ターン・最大時間・並列数の4つは、走らせる前に必ず決める。</div>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <!-- 6 token -->
-  <section id="token">
-    <span class="kick">6</span>
-    <h2 class="serif">トークン / コストの上限はどこで設定するか</h2>
-    <p class="lead">「使い方」ではなく「契約形態」で上限のかけ方が変わる。自分がどれで使っているかをまず確認する。</p>
-    <div class="tblwrap">
+  <!-- ================= 6 token ================= -->
+  <section class="ch" id="token">
+    <div class="chhead rv">
+      <div class="chnum">06</div>
+      <div>
+        <div class="chkick">SECTION 6 — BUDGET</div>
+        <h2>トークン / コストの上限はどこで設定するか<span class="en">Caps by contract type</span></h2>
+      </div>
+    </div>
+    <div class="prose rv">
+      <p>「使い方」ではなく「契約形態」で上限のかけ方が変わる。自分がどれで使っているかをまず確認する。</p>
+    </div>
+    <div class="tblwrap rv">
     <table>
       <tr><th>使い方</th><th>上限のかけ方 / 確認場所</th></tr>
       <tr>
         <td><b>サブスク</b><br>(Pro / Max)</td>
-        <td>ローリング<b>5時間セッション上限</b>＋<b>週次上限</b>で自動的に頭打ち（Pro＜Max5x＜Max20x）。使用中は <code>/status</code>・請求は <code>/cost</code> で確認。上限に達すると待機。</td>
+        <td>ローリング<b>5時間セッション上限</b>＋<b>週次上限</b>で自動的に頭打ち（Pro＜Max5x＜Max20x）。使用中は <code class="inline">/status</code>・請求は <code class="inline">/cost</code> で確認。上限に達すると待機。</td>
       </tr>
       <tr>
         <td><b>API 従量</b><br>(Console)</td>
@@ -380,38 +516,84 @@
       </tr>
       <tr>
         <td><b>実行あたり</b></td>
-        <td>ループ / SDK 側で<b>最大ターン・最大時間</b>を設定（→ 5章）。サブエージェントは各自が課金対象なので、使いどころを絞る。</td>
+        <td>ループ / SDK 側で<b>最大ターン・最大時間</b>を設定（→ 5章)。サブエージェントは各自が課金対象なので、使いどころを絞る。</td>
       </tr>
     </table>
     </div>
+    <div class="rv">
     <h3>コストを膨らませない実務ルール</h3>
-    <ul>
+    <ul class="pts">
       <li>走らせる前に<b>予算（時間・回数）</b>を宣言してから始める</li>
       <li>大きなツール出力はファイルへ退避（context を汚さない＝無駄トークン削減）</li>
       <li>不要な MCP / ツールを外す（説明文が毎回課金対象の入力になる）</li>
       <li>サブエージェントは「第二の意見が費用に見合う所」だけに投入</li>
     </ul>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    </div>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <!-- 7 start -->
-  <section id="start">
-    <span class="kick">7</span>
-    <h2 class="serif">最初の30分でやること</h2>
-    <ul>
-      <li>① <code>CLAUDE.md</code> を作り、コマンド・レッドライン・Done条件を10〜20行で書く（→ 1章）</li>
-      <li>② <code>.claude/settings.json</code> に PostToolUse（lint / 型）と PreToolUse（危険コマンド block）を1つずつ（→ 2章）</li>
-      <li>③ 使っている契約のコスト上限（サブスクの <code>/cost</code> or Console の spend limit）を一度見ておく（→ 6章）</li>
-      <li>④ 毎回説明している手順が1つあれば <code>.claude/skills/</code> に SKILL.md で切り出す（→ 3章）</li>
-      <li>⑤ 要件定義など別フェーズがあれば、<code>docs/spec/</code> に専用 CLAUDE.md を置き、場所で分ける（→ 4章）</li>
-      <li>⑥ 自走は <code>/goal</code> に検証可能な停止条件を書いてから、小さなタスクで試す（→ 5章）</li>
+  <!-- ================= 7 start ================= -->
+  <section class="ch" id="start">
+    <div class="chhead rv">
+      <div class="chnum">07</div>
+      <div>
+        <div class="chkick">SECTION 7 — FIRST 30 MINUTES</div>
+        <h2>最初の30分でやること<span class="en">Setup checklist</span></h2>
+      </div>
+    </div>
+    <div class="rv">
+    <ul class="pts">
+      <li>① <code class="inline">CLAUDE.md</code> を作り、コマンド・レッドライン・Done条件を10〜20行で書く（→ 1章）</li>
+      <li>② <code class="inline">.claude/settings.json</code> に PostToolUse（lint / 型）と PreToolUse（危険コマンド block）を1つずつ（→ 2章）</li>
+      <li>③ 使っている契約のコスト上限（サブスクの <code class="inline">/cost</code> or Console の spend limit）を一度見ておく（→ 6章）</li>
+      <li>④ 毎回説明している手順が1つあれば <code class="inline">.claude/skills/</code> に SKILL.md で切り出す（→ 3章）</li>
+      <li>⑤ 要件定義など別フェーズがあれば、<code class="inline">docs/spec/</code> に専用 CLAUDE.md を置き、場所で分ける（→ 4章）</li>
+      <li>⑥ 自走は <code class="inline">/goal</code> に検証可能な停止条件を書いてから、小さなタスクで試す（→ 5章）</li>
       <li>⑦ 失敗が出たら、その場で CLAUDE.md か hook に1行足す（ラチェット）</li>
     </ul>
-    <div class="note links">参考：<a href="https://code.claude.com/docs/en/hooks">Hooks reference</a> ／ <a href="https://code.claude.com/docs/en/costs">Manage costs</a> ／ <a href="https://support.claude.com/en/articles/14552983-models-usage-and-limits-in-claude-code">Models, usage, and limits in Claude Code</a></div>
-    <span class="up"><a href="#top">↑ 目次へ戻る</a></span>
+    </div>
+    <hr class="hr">
+    <p class="links rv" style="margin-top:30px"><b>参考</b><br>
+    <a href="https://code.claude.com/docs/en/hooks">Hooks reference</a> ／ <a href="https://code.claude.com/docs/en/costs">Manage costs</a> ／ <a href="https://support.claude.com/en/articles/14552983-models-usage-and-limits-in-claude-code">Models, usage, and limits in Claude Code</a></p>
+    <span class="up"><a href="#top">↑ TOP / 目次へ</a></span>
   </section>
 
-  <p class="tail">— 別紙おわり —　本編：<a href="slides.html" style="color:var(--slate);font-weight:600">xxエンジニアリング（勉強会資料）</a></p>
+  <p class="tail">— 別紙おわり —　本編：<a href="slides.html">xxエンジニアリング — 設計対象は、外へ。</a></p>
 </div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---- scroll progress ---- */
+  var prog=document.getElementById('prog');
+  function onScroll(){
+    var h=document.documentElement;
+    var max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+  }
+  addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* ---- reveal on scroll ---- */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.1});
+  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+
+  /* ---- rail active state ---- */
+  var ids=['top','claude','hooks','skills','phase','loop','token','start'];
+  var links={};
+  document.querySelectorAll('#rail a').forEach(function(a){ links[a.getAttribute('href').slice(1)]=a; });
+  var io2=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        ids.forEach(function(id){ if(links[id]) links[id].classList.remove('on'); });
+        var l=links[e.target.id]; if(l) l.classList.add('on');
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  ids.forEach(function(id){ var el=document.getElementById(id); if(el) io2.observe(el); });
+})();
+</script>
 </body>
 </html>
